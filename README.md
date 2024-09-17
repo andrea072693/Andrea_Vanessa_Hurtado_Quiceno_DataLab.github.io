@@ -84,13 +84,13 @@ This project involved creating a console-based version of the popular Monopoly b
 - Class Design and Inheritance (Classes: `Case`, `Joueur`, `Plateau`)
 - Console-Based User Interface
 
-[Player A arrives to the Police](assests/playerAarrivetopolice.png)
+![Player A arrives to the Police](assests/playerAarrivetopolice.png)
 
 *Figure 1: Player A arrives to the Police*
 
-[Monopoly Board](assests/playerAsendtoprison.png)
+![Player A is send to prison](assests/playerAsendtoprison.png)
 
-*Figure 2: Monopoly Board*
+*Figure 2: Player A is send to prison*
 
 
 
