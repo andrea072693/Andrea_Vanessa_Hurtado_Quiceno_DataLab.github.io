@@ -1,4 +1,4 @@
-# Statistics and Data Science.
+# Statistics and Data Science
 
 Welcome to my GitHub portfolio! I am Andrea Hurtado Quiceno, a PhD candidate at RPTU Kaiserslautern, specializing in Stochastic Analysis and Differential Geometry. Throughout my academic journey, I have engaged in projects ranging from Probability Theory to Statistical Modellisation, including the use of topological data analysis for machine learning. This portfolio serves as a showcase of my research, academic achievements, and projects, reflecting my commitment to pushing the boundaries of knowledge in mathematics and data science.
 
@@ -83,6 +83,16 @@ This project involved creating a console-based version of the popular Monopoly b
 - Game Loops and Event Handling
 - Class Design and Inheritance (Classes: `Case`, `Joueur`, `Plateau`)
 - Console-Based User Interface
+
+[Player A arrives to the Police](assests/playerAarrivetopolice.png)
+
+*Figure 1: Player A arrives to the Police*
+
+[Monopoly Board](assests/playerAsendtoprison.png)
+
+*Figure 2: Monopoly Board*
+
+
 
 ## Linear Models
 
