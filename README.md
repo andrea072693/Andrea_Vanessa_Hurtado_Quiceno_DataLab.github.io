@@ -182,6 +182,9 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
   
   Generated maps to visualize population distribution, employment, housing status, and education levels across Bourgogne and Franche-Comté.
 
+![Communes](assests/Communes_population_in_both_regions.png)
+*Figure 3: Communes population in both region*
+
 - **Clustering Analysis**:  
   Applied clustering and dendrograms to group communes based on socioeconomic factors, highlighting differences such as:
   - More homeownership in Bourgogne.
