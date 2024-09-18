@@ -115,8 +115,8 @@ This project tackled **simple and multiple linear regression models** to predict
 - Custom Regression Functions
 - R Programming (Functions: `lm()`, `sweep()`, matrix operations)
 
-[View HTML Report](doc/TP1NEWToSubmit.html)
-*View HTML TP1 report*
+[View HTML TP1 report](doc/TP1NEWToSubmit.html)
+[Download R Script](doc/TP1NEWToSubmit.Rmd)
 
 ### **Linear Models Project (TP2)**  
 
@@ -136,8 +136,8 @@ This project involved using multiple **linear regression models** to predict ozo
 - Bootstrap Methods for Confidence Intervals
 - R Programming (Libraries: `lm()`, `ellipse`, `bootstrap`)
 
-[View HTML Report](TP2/TP2NEW2.html)
-*View HTML TP2 report*
+[View HTML TP2 report](TP2/TP2NEW2.html)
+
 
 ### **Linear Models Project (TP3)**  
 
@@ -150,8 +150,8 @@ This project focused on building and validating multiple **linear regression mod
 - Cross-Validation Techniques
 - R Programming (Libraries: `lm()`, `corrplot`, `leaps`)
 
-[View HTML Report](TP3/TP3HURTADOAndrea.html)
-*View HTML TP3 report*
+[View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
+
 
 ## Data Analysis Lecture
 
@@ -201,11 +201,16 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 - **R packages for mapping and visualization**:
   - `sf`, `tmap`, `leaflet`, `gridExtra`, `ggrepel`
 
-[View HTML Report](project/Projet_Ritish_Andrea.html)
-*View HTML Data Analisis project*
+[View HTML Data Analisis project](project/Projet_Ritish_Andrea.html)
+
 
 ##### **Recommendations for Further Study**:
 A deeper analysis of communes in both regions, potentially including additional variables like salary, tax payments, and financial background to better understand economic conditions.
 
+### SVD Project 
+
+## Simulations Lecture 
+
+## Statistics Lecture
 
 ## New projects, coming soon!
