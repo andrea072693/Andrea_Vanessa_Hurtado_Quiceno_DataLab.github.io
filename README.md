@@ -160,9 +160,6 @@ This project focused on building and validating multiple **linear regression mod
 ### Socioeconomic Differences Between Bourgogne and Franche-Comté Regions in 2012: A PCA Analysis
 
 #### **PCA Analysis Project**  
-*Master 1 in Modelisation Statistique master's project*  
-Université Franche-Comté, Besançon (2022 – 2023)  
-A.V. Hurtado Quiceno & Narain Ritish
 
 This project focused on analyzing **socioeconomic disparities** between Bourgogne and Franche-Comté using data from the 2012 national French census. Principal Component Analysis (PCA) was used to investigate relationships between demographic, employment, education, and housing variables across the two regions.
 
@@ -211,10 +208,85 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 ##### **Recommendations for Further Study**:
 A deeper analysis of communes in both regions, potentially including additional variables like salary, tax payments, and financial background to better understand economic conditions.
 
-### SVD Project 
+### Singular Value Decomposition (SVD) for Image Reconstruction
 
-## Simulations Lecture 
+This project demonstrates the application of Singular Value Decomposition (SVD) for image compression and reconstruction. Using a grayscale image of Montmartre, we employed SVD to reduce the image's dimensionality while preserving its essential features.
+
+### **Objectives:**
+- Use SVD to decompose a matrix representation of an image into its singular values.
+- Reconstruct the image using different numbers of singular values to achieve compression.
+- Evaluate the compression quality using metrics such as **Mean Square Error (MSE)** and **Peak Signal-to-Noise Ratio (PSNR)**.
+
+#### **Key Findings:**
+- Compressing the image by retaining fewer singular values still maintains high image quality.
+- **Standardizing** the image matrix before SVD results in better reconstruction quality, with a higher PSNR and a smaller MSE.
+- **Computational Time**: SVD is computationally efficient even for large image matrices.
+
+#### **Tools Used:**
+- R Libraries:
+  - `png` for reading the image.
+  - `BBmisc` for normalizing the matrix.
+  - `stats` for performing the SVD.
+  - `gridExtra` for visualizing results.
+ 
+[View PDF Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/cdc421bf68f624c751fd21253e8f22164da6d0ca/SVD/SVD_Project__Ritish__Andrea.pdf)
+
+
+## Simulation in R 
+
+This project simulates the random walk of a turtle on a 2D grid using Monte Carlo methods. The goal is to estimate the distribution of the number of revisits (\(N_n\)) to previously visited points for different step sizes \(n = 100\), \(n = 1000\), and \(n = 10000\).
+
+### **Authors**:
+- A.V Hurtado Quiceno
+- Narain Ritish
+
+### **Problem Description**
+The turtle starts at the origin \((0,0)\) and moves randomly in one of four directions: \((0,1)\), \((1,0)\), \((0,-1)\), or \((-1,0)\). After each step, we record whether the turtle revisits a previously visited point.
+
+For each value of \(n\), we calculate \(N_n\), the number of revisits, and use Monte Carlo simulations to analyze the distribution of \(N_n\).
+
+#### **Steps**:
+1. Simulate the random walk for different values of \(n\).
+2. Use Monte Carlo methods to estimate the distribution of revisits.
+3. Visualize the results using histograms and plots.
+
+#### **Key Aspects**
+- **Objective**: To estimate the distribution of revisit events using Monte Carlo simulations.
+- **Simulation**: Conducted for \(n = 100\), \(n = 1000\), and \(n = 10000\) steps.
+- **Monte Carlo Methods**: Used to run multiple simulations to generate a graphical representation of \(N_n\).
+- **Graphical Analysis**: Histograms and density plots were used to understand the distribution of revisit events.
+
+#### **R Packages Used**
+- `ggplot2`: For creating visualizations such as histograms and density plots.
+- `dplyr`: For data manipulation and summarization.
+- `purrr`: For mapping functions and running multiple simulations efficiently.
+- `tidyr`: To organize and reshape the simulation data.
+- `tibble`: For creating and managing tidy data frames.
+- `gridExtra`: For arranging multiple plots in a grid format for easier comparison.
+
+[View HTML Simulations](simulations/SimulationProject_Ritish_Andrea.html)
+
+[View R code](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/cdc421bf68f624c751fd21253e8f22164da6d0ca/simulations/SimulationProject_Ritish_Andrea.Rmd)
+
 
 ## Statistics Lecture
+
+This project analyzes simulated data using statistical methods. The goal is to explore various aspects of the data, perform hypothesis testing, and build regression models to understand the underlying relationships.
+
+#### **Key Aspects**:  
+- **Data Simulation**: Generated synthetic data to represent real-world scenarios.
+- **Hypothesis Testing**: Applied t-tests and chi-squared tests to validate hypotheses about the data.
+- **Regression Modeling**: Built linear regression models to predict outcomes and understand variable dependencies.
+  
+#### **R Packages Used**:  
+- `ggplot2`: For data visualization.
+- `dplyr`: For data manipulation.
+- `car`: For regression diagnostics and hypothesis testing.
+- `tidyr`: For reshaping and organizing data.
+  
+[View HTML Statistics](statistics/project_statististics.html)
+
+[View R code](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/5195913c2c25880daf861448d59a8d2539baf68c/statistics/project_statististics.Rmd)
+
 
 ## New projects, coming soon!
