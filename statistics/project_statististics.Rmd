@@ -1,0 +1,998 @@
+---
+title: "Project - R Group 6"
+author: "A.V Hurtado Quiceno & Amine Otmane"
+date: "1/11/2023"
+bibliography: bibliography.bib  
+output:
+  html_document:
+      toc: TRUE
+  pdf_document: 
+      toc: TRUE
+      
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE,message=FALSE)
+rm(list = ls())
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+library(qqplotr)
+library(MASS)
+library(webshot)
+# library(FactoMineR)
+# loading the required package
+# library(dgof)
+
+
+# Load dataset
+ Enquete <- read.csv("~/Desktop/Groupe 6/Enquete.txt", sep="")
+#Enquete <- read.csv("~/Downloads/Enquete.txt", sep="")
+
+# Rename variables for easy handle
+colnames(Enquete) <- c("Employer", 
+                       "Satisfaction", 
+                       "Children", 
+                       "Salary", 
+                       "Budget")
+
+Enquete$Satisfaction <- factor(Enquete$Satisfaction, 
+                               levels = c("Peu satisfait", 
+                                          "Moyennement satisfait",
+                                          "Tres satisfait"))
+
+
+# Bibliography
+
+
+
+
+
+```
+
+# Introduction
+
+<!-- As shown in many articles showing differences between employee salaries in the public and private sector, such as in -, -, and - that 
+cover many countries across Europe and North America, the data shows that employees in the public sector are paid more, since their salary 
+is paid by the government, so they may have access to public health insurance. We need to complete this.  -->
+
+
+According to the literature reviewed in article [@MAKRIDIS2021100002], the following work is intended to analyze the data between employees from the private and public sector. This is done by taking into account different variables such as the monthly wage variable, monthly 
+budget among others. 
+
+It should be noted that public sector employees gain less but they obtain a higher quality in non-wage benefits, that is, in their overall 
+compensation, which generates a higher level of satisfaction in them.  
+
+The fact that workers assume fewer responsibilities in their jobs and their level of practice is much lower, which implies fewer 
+opportunities to professionalize, influences the satisfaction variable.   
+
+According to Article [@Muhammad], the satisfaction of the public salary is the result of certain compensation systems and of using the 
+postulate "equal work equal pay" as the basis of a wage system of equity and justice.
+
+
+# Data
+
+We collected data from a sample of 100 participants. The following information was given: 
+
+1. Employment sector (Private / Public)
+2. Monthly salary
+3. Monthly budget
+4. Number of children
+5. Employer satisfaction (Peu Satisfait / Moyennement Satisfait / Tres Satisfait)
+
+# Key scientific questions
+
+The following key scientific questions will be addressed with this analysis:
+
+1. Is there a difference between monthly salaries in the public and private sectors?
+
+2. What is the difference between the monthly budgets of employees in the public and private sectors?
+
+3. Is there a difference in the number of children between public and private sector employees?
+
+4. Does job satisfaction differ between employees in the public and private sectors?
+
+# Statistical Analysis
+
+Summary statistics and visualizations will be used to explain the data. Continuous variables will be described in terms of mean, SD, minimum, maximum and inter-quartile range. Categorical variables will be described using frequencies and percentages. 
+
+Continuous variables will be tested for normality via the Shapiro-Wilk test of normality. The null and alternative hypothesis are defined as: 
+
+$$
+H_{0} : \mbox{the variable follows a normal distribution}
+$$
+
+$$H_{1}: \mbox{the distribution that the variable follows is not normal}$$ 
+
+If there is evidence that the data is normally distributed a t-test will be performed to compare continuous variables between private and public employees. In order to determine which t-test is most appropriate, a variance ratio test will be conducted to compare the variances of continuous variables between private and public employees. If there is evidence that the variance are equal between the two groups, two-sample t-test will be used otherwise Welch t-test will be used for the comparison. If there is evidence that the data is not normally distributed, the non-parametric Mann-Whitney test will be applied to compare the variable between private and public employees.
+
+In addition; 
+
+
+  * A two-sample Kolmogorov-Smirnov test will be used to compare the distribution of the continuous variables between private and public employees. 
+
+  * Categorical variables will be compared using the Chi-Square test. 
+
+# Salary Analysis 
+
+Table 1 shows the summary statistics for the monthly salary. The average mean salary is 1644.34 (95% CI: 1590.36 to 1698.32); with the average mean salary for the private sector being 1857.21 (95% CI: 1789.33 to 1925.09) and for the public sector being 1483.74 (95% CI: 1435.33 to 1532.15). 
+
+##### Table 1 - Descriptive statistics for salary by employer
+```{r}
+# All participants
+sum_salary_all <- Enquete %>%
+  mutate(Variable = "Salary", trick = 1) %>%
+  group_by(Variable) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Salary, na.rm=TRUE), 2), 
+            std_dev = round(sd(Salary, na.rm=TRUE), 2),
+            min = round(min(Salary, na.rm=TRUE), 2),
+            median = round(median(Salary, na.rm=TRUE), 2), 
+            max = round(max(Salary, na.rm=TRUE), 2), 
+            iqr = IQR(Salary, na.rm=TRUE)) %>%
+  mutate(Employer = "All participants") %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+# By employer
+sum_salary_emp <- Enquete %>%
+  mutate(Variable = "Salary", trick = 1) %>%
+  group_by(Variable, Employer) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Salary, na.rm=TRUE), 2), 
+            std_dev = round(sd(Salary, na.rm=TRUE), 2),
+            min = round(min(Salary, na.rm=TRUE), 2),
+            median = round(median(Salary, na.rm=TRUE), 2), 
+            max = round(max(Salary, na.rm=TRUE), 2), 
+            iqr = IQR(Salary, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+sum_salary_com <- bind_rows(sum_salary_emp, sum_salary_all)
+
+DT::datatable(sum_salary_com, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+### Checking for normality for the overall sample
+
+Plot 1 shows key data visualizations to understand the overall distribution of the monthly salary and assess the normality of the data. Plot 1 A) shows the box-plot, B) shows the histogram with the theoretical normal distribution, and C) shows the QQ-plot for normality. 
+
+Based on the above visual inspections, there is evidence that the monthly salary follows approximately a normal distribution. Even tough the p-value is $> 0.05$ (p-value$=0.3995$) with the Shapiro-Wilk normality test, we can not accept the null-hypothesis.
+
+
+##### Plots 1 - to test (visually) the normality of the Salary data
+
+```{r}
+p1 <- ggplot(Enquete) +
+  geom_boxplot(aes(y = Salary), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Salary, x = 0, col = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10), 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) +
+  xlab("") + ylab("Salary") + ggtitle("Plot A")
+
+salary_den <- seq(min(Enquete$Salary), max(Enquete$Salary), 5)
+den <- dnorm(x = salary_den, 
+             mean = mean(Enquete$Salary), 
+             sd = sd(Enquete$Salary))
+den_data <- data.frame(salary_den, den)
+
+p2 <- ggplot(Enquete, aes(x = Salary)) + 
+  geom_histogram(aes(y = ..density..), bins = 10, colour = 1, fill = "gray") +
+  geom_line(data = den_data, aes(x = salary_den, y = den)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), text = element_text(size = 10)) + ggtitle("Plot B")
+
+p3 <- ggplot(data = Enquete, mapping = aes(sample = Salary)) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 10), panel.grid = element_blank()) + ggtitle("Plot C")
+
+egg::ggarrange(p1, p2, p3, nrow = 2)
+```
+
+#### Table 2 - Normality Shapito test for monthly salary
+```{r}
+# Normality check
+normality_test <- shapiro.test(Enquete$Salary)
+normality_test_data <- data.frame(statistic = round(normality_test$statistic, 4), 
+                                  p_value = round(normality_test$p.value, 4))
+DT::datatable(normality_test_data, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+  *Observation: Since the p-value is $=0.3995$ which is highly significant, we can approximately conclude that the distribution of salary is normal (We can not confirm perfectly $H_{0}$).
+
+
+### Checkig for normality by employer type
+
+Plot 2 shows key data visualizations to understand the overall distribution of the monthly salary and assess the normality of the data by employer type. Plot 1 A) shows the box-plot by employer type, B) shows the histogram with the theoretical normal distribution by employer type, and C) shows the QQ-plot for normality by employer type. 
+
+Based on the above visual inspections, there is evidence that the monthly salary follows approximately a normal distribution in both the private and public sector.
+
+#####  Plots 2 to test (visually) the normality of the Salary data by employer
+
+```{r}
+p1 <- ggplot(Enquete) +
+  geom_boxplot(aes(y = Salary, x = Employer), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Salary, x = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10)) +
+  xlab("Employer") + ylab("Salary") + ggtitle("Plot A")
+
+salary_den <- seq(min(Enquete$Salary), max(Enquete$Salary), 5)
+den <- c(dnorm(x = salary_den, 
+               mean = mean(Enquete$Salary[Enquete$Employer == "Prive"]), 
+               sd = sd(Enquete$Salary[Enquete$Employer == "Prive"])), 
+         dnorm(x = salary_den, 
+               mean = mean(Enquete$Salary[Enquete$Employer == "Public"]), 
+               sd = sd(Enquete$Salary[Enquete$Employer == "Public"])))
+
+den_data <- data.frame(salary_den = c(salary_den, salary_den), 
+                       den, 
+                       Employer = c(rep("Prive", length(salary_den)), 
+                                    rep("Public", length(salary_den))))
+
+p2 <- ggplot(Enquete, aes(x = Salary)) + 
+  geom_histogram(aes(y = ..density..), bins = 10, colour = 1, fill = "gray") +
+  geom_line(data = den_data, aes(x = salary_den, y = den)) +
+  facet_wrap( ~ Employer) +
+  theme_bw() +
+  theme(panel.grid = element_blank()) + ggtitle("Plot B")
+
+p3 <- ggplot(data = Enquete, mapping = aes(sample = Salary)) +
+  facet_wrap( ~ Employer) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 10), panel.grid = element_blank()) + ggtitle("Plot C")
+
+egg::ggarrange(p1, p2, p3, nrow = 2)
+```
+
+
+
+
+### What is the difference in salary between employer?
+
+Plot 3 shows the the mean monthly salary with the 95% confidence interval for the private and public employees. Based on this visual inspection, there is evidence that there is a difference in the monthly salary, with mean salary being higher for private employees. 
+
+Table 4 presents the variance ratio test, with evidence that the variance monthly salary being similar between the private and public employees (p-vaue > 0.05). There is not enough to reject the null hypothesis, where 
+
+$$
+H_{0}: \mu_{private} = \mu_{public}
+$$ 
+$$
+H_{1}: \mu_{private} \ne  \mu_{public}
+$$
+
+Table 5 presents the two sample t-test, with evidence that there is a significant difference in the mean salary between private and public employees (p < 0.05). The mean difference is 373.47 (95% CI: 293.43 to 453.51) higher for private employees in relation to public employees. 
+
+#### Table 4 - Variance ratio test for equality of variance
+```{r}
+var_test <- var.test(Enquete$Salary ~ Enquete$Employer)
+variance_ratio <- paste0(round(var_test$estimate, 2), 
+                         " (95% CI: ", round(var_test$conf.int[1], 2), 
+                         " to ", 
+                         round(var_test$conf.int[2], 2), ")")
+var_test_data <- data.frame(variance_ratio = variance_ratio, 
+                            F_value = round(var_test$statistic, 2), 
+                            df_num = round(var_test$parameter[1], 2), 
+                            df_den = round(var_test$parameter[2], 2), 
+                            p_value = var_test$p.value)
+
+DT::datatable(var_test_data, rownames = F, 
+              options = list(dom = "t"), 
+              colnames = c("Variance ratio (Prive / Public)", "f value", "df (Numerator)", "df (Denominator)", "p-value"))
+```
+
+
+#### Table 5 - Two sample t-test for equal variance comparing salary between employer
+```{r}
+ttest_results <- t.test(x = Enquete$Salary[Enquete$Employer == "Prive"], 
+                        y = Enquete$Salary[Enquete$Employer == "Public"], 
+                        paired = F, var.equal = T)
+
+
+diff_rest <- paste0(round(ttest_results$estimate[1] - ttest_results$estimate[2], 2), 
+                    " (95% CI: ", round(ttest_results$conf.int[1], 2), 
+                    " to ", 
+                    round(ttest_results$conf.int[2], 2), ")")
+
+ttest_results_data <- data.frame(Difference = diff_rest, 
+                                 t = round(ttest_results$statistic, 2), 
+                                 df = round(ttest_results$parameter, 2), 
+                                 p_value = ttest_results$p.value)
+
+DT::datatable(ttest_results_data, rownames = F, 
+              options = list(dom = "t"), 
+              colnames = c("Mean difference (Prive - Public)", "t value", "df", "p-value"))
+```
+
+#####  Plot 3 Mean monthly salary with 95% CI error bars by employer type 
+
+```{r}
+summary_of_salary <- Enquete %>%
+  mutate(Variable = "Salary", trick = 1) %>%
+  group_by(Variable, Employer) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = mean(Salary, na.rm=TRUE), 
+            std_dev = sd(Salary, na.rm=TRUE),
+            min = min(Salary, na.rm=TRUE),
+            median = median(Salary, na.rm=TRUE), 
+            iqr = IQR(Salary, na.rm=TRUE), 
+            max = max(Salary, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(lower_95CI = mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 
+         upper_95CI = mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)))
+
+ggplot(data = summary_of_salary) +
+  geom_point(aes(x = Employer, y = mean)) +
+  geom_errorbar(aes(x = Employer, ymin = lower_95CI, ymax = upper_95CI), 
+                width = 0.1) +
+  xlab("Employer") + ylab("Salary [Mean +/- t(n - 1) * SE]") +
+  theme_bw() +
+  theme(text = element_text(size = 15))
+```
+
+The Kolmogorov-Smirnov plot shows that emperical cumulative distribution function of monthly salary for private and public employee is not the same. Table 6 shows that there is evidence that the distribution of the monthly salary is different between the private and public employees (p < 0.05). 
+
+#####  Plot 4 Kolmogorov-Smirnov. Shows the cumulative distribution functions (CDF) for the monthly salary of the private sector (red)  and the public sector (blue). 
+
+```{r}
+
+cdf1 <- ecdf(Enquete$Salary[Enquete$Employer == "Public"]) 
+cdf2 <- ecdf(Enquete$Salary[Enquete$Employer == "Prive"]) 
+# find min and max statistics to draw line between points of greatest distance
+minMax <- seq(min(Enquete$Salary[Enquete$Employer == "Public"], Enquete$Salary[Enquete$Employer == "Prive"]), 
+              max(Enquete$Salary[Enquete$Employer == "Public"], Enquete$Salary[Enquete$Employer == "Prive"]), 
+              length.out=length(Enquete$Salary[Enquete$Employer == "Public"])) 
+x0 <- minMax[which( abs(cdf1(minMax) - cdf2(minMax)) == max(abs(cdf1(minMax) - cdf2(minMax))) )] 
+y0 <- cdf1(x0) 
+y1 <- cdf2(x0) 
+
+ggplot(Enquete, aes(x = Salary, group = Employer, color = Employer))+
+  stat_ecdf(size=1) +
+  theme_bw() +
+  theme(text = element_text(size = 15)) +
+  xlab("Sample") +
+  ylab("ECDF")
+
+```
+
+#### Table 6 - Two sample kolmogorov-smirnov test for equal distributions
+
+```{r}
+ks_results <- ks.test(x= Enquete$Salary[Enquete$Employer == "Public"],  
+                      y = Enquete$Salary[Enquete$Employer == "Prive"])
+
+ks_results_data <- data.frame(D = round(ks_results$statistic, 2), 
+                              p_value = ttest_results$p.value)
+
+DT::datatable(ks_results_data, rownames = F, 
+              options = list(dom = "t"), 
+              colnames = c("D", "p-value"))
+```
+
+
+### Salary by employer and satisfaction 
+
+Plot 5 shows the mean monthly salary with 95% CI error bars by employer type and employee satisfaction (see Table 7). Based on this descriptive analysis, the monthly salary is higher for employees in the private sector that are satisfy in their job than those that are not satisfy. The opposite phenomenon is seen in the public sector with employees who are not satisfied on average getting a higher salary.
+
+
+Table 7 shows the summary statistics for monthly salary by employer and satisfaction. For example, the average mean salary for employees from the private sector and public sector that are "peu satisfait" is 1804.91 (95% CI: 1688.61 to 1921.21) and 1514.42 (95% CI: 1427.04 to 1601.8) respectively. 
+
+##### Table 7 Descriptive statistics for salary by employer and satisfaction
+
+```{r}
+summary_of_salary_2 <- Enquete %>%
+  mutate(Variable = "Salary", trick = 1) %>%
+  group_by(Variable, Employer, Satisfaction) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+mean = round(mean(Salary, na.rm=TRUE), 2), 
+            std_dev = round(sd(Salary, na.rm=TRUE), 2),
+            min = round(min(Salary, na.rm=TRUE), 2),
+            median = round(median(Salary, na.rm=TRUE), 2), 
+            max = round(max(Salary, na.rm=TRUE), 2), 
+            iqr = IQR(Salary, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+DT::datatable(summary_of_salary_2, rownames = F)
+
+summary_of_salary_2 <- Enquete %>%
+  mutate(Variable = "Salary", trick = 1) %>%
+  group_by(Variable, Employer, Satisfaction) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = mean(Salary, na.rm=TRUE), 
+            std_dev = sd(Salary, na.rm=TRUE),
+            min = min(Salary, na.rm=TRUE),
+            median = median(Salary, na.rm=TRUE), 
+            iqr = IQR(Salary, na.rm=TRUE), 
+            max = max(Salary, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(lower_95CI = mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 
+         upper_95CI = mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)))
+
+
+
+
+```
+
+##### Plot 5 Mean monthly salary with 95% CI error bars by employer type and employee satisfaction
+
+```{r}
+ggplot(data = summary_of_salary_2) +
+  geom_point(aes(x = Satisfaction, y = mean)) +
+  geom_errorbar(aes(x = Satisfaction, ymin = lower_95CI, ymax = upper_95CI), 
+                width = 0.1) +
+  facet_wrap( ~ Employer) +
+  xlab("Satisfaction") + ylab("Salary") +
+  theme_bw() +
+  theme(text = element_text(size = 20), axis.text.x = element_text(angle = 90))
+```
+
+
+
+```{r, include=FALSE}
+ggplot(data = summary_of_salary_2, aes(x = Satisfaction, y = Employer)) +
+  geom_tile(aes(fill = mean)) +
+  scale_fill_gradient(low = "yellow", high = "red", name = "Salary") +
+  theme_bw() +
+  ylab("Employer") + xlab("Satisfaction") +
+  theme(text = element_text(size = 20), axis.text.x = element_text(angle = 90))
+```
+
+
+# Budget Analysis 
+
+### Normality of the salary data
+
+Based on the above visual inspections there is evidence that the budget data is normally distributed. Even though the p-value is $> 0.05$ (p-value$=0.1606$) with the Shapiro-Wilk normality test, we can not accept the null-hypothesis.
+
+
+Plot 1 shows key data visualizations to understand the overall distribution of the monthly food budget and assess the normality of the data. Plot 1 A) shows the box-plot, B) shows the histogram with the theoretical normal distribution, and C) shows the QQ-plot for normality. 
+
+##### Plots 1 to test (visually) the normality of the Budget data
+
+```{r}
+p1 <- ggplot(Enquete) +
+  geom_boxplot(aes(y = Budget), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Budget, x = 0, col = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10), 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) +
+  xlab("") + ylab("Budget") + ggtitle("Plot A")
+
+salary_den <- seq(min(Enquete$Budget), max(Enquete$Budget), 5)
+den <- dnorm(x = salary_den, 
+             mean = mean(Enquete$Budget), 
+             sd = sd(Enquete$Budget))
+den_data <- data.frame(salary_den, den)
+
+p2 <- ggplot(Enquete, aes(x =Budget )) + 
+  geom_histogram(aes(y = ..density..), bins = 10, colour = 1, fill = "gray") +
+  geom_line(data = den_data, aes(x = salary_den, y = den)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), text = element_text(size = 10)) + ggtitle("Plot B")
+
+p3 <- ggplot(data = Enquete, mapping = aes(sample = Budget)) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 10), panel.grid = element_blank()) + ggtitle("Plot C")
+
+egg::ggarrange(p1, p2, p3, nrow = 2)
+```
+
+
+
+#### Table 1 - Normality Shapito test for variable Budget
+```{r}
+# Normality check
+normality_test <- shapiro.test(Enquete$Budget)
+normality_test_data <- data.frame(statistic = round(normality_test$statistic, 4), 
+                                  p_value = round(normality_test$p.value, 4))
+DT::datatable(normality_test_data, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+### Normality of the budget by employer (private and public)
+
+
+In this section we test the normality of the salary in each of the public and private sectors:  
+
+  * The plot A shows that the average budget in the private sector (500) is higher than that of the public sector (400).
+
+  * In this plot  as in the above section, we first did some visual inspection to test normality. We observe that as all the points fall approximately along this reference line in both employment sectors. The same can be seen from the histogram plot B. 
+
+
+Table 1 shows the summary statistics for the monthly budget. The average mean budget is 428.66 (95% CI: 405.52 to 451.8); with the average mean budget for the private sector being 483.85	 (95% CI: 447.1 to 520.6) and for the public sector being 387.02 (95% CI: 361.51 to 412.53). 
+
+##### Table 1 - Descriptive statistics for budget by employer
+
+```{r}
+# All participants
+sum_salary_all <- Enquete %>%
+  mutate(Variable = "Budget", trick = 1) %>%
+  group_by(Variable) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Budget, na.rm=TRUE), 2), 
+            std_dev = round(sd(Budget, na.rm=TRUE), 2),
+            min = round(min(Budget, na.rm=TRUE), 2),
+            median = round(median(Budget, na.rm=TRUE), 2), 
+            max = round(max(Budget, na.rm=TRUE), 2), 
+            iqr = IQR(Budget, na.rm=TRUE)) %>%
+  mutate(Employer = "All participants") %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+# By employer
+sum_salary_emp <- Enquete %>%
+  mutate(Variable = "Budget", trick = 1) %>%
+  group_by(Variable, Employer) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Budget, na.rm=TRUE), 2), 
+            std_dev = round(sd(Budget, na.rm=TRUE), 2),
+            min = round(min(Budget, na.rm=TRUE), 2),
+            median = round(median(Budget, na.rm=TRUE), 2), 
+            max = round(max(Budget, na.rm=TRUE), 2), 
+            iqr = IQR(Budget, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+sum_salary_com <- bind_rows(sum_salary_emp, sum_salary_all)
+
+DT::datatable(sum_salary_com, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+Plot 2 shows key data visualizations to understand the overall distribution of the monthly food budget by the employer and assess the normality of the data. Plot 1 A) shows the box-plot, B) illustrates the histogram with the theoretical normal distribution, and C) illustrates the QQ-plot for normality. 
+
+##### Plots 2 to test (visually) the normality of the Budget data by the employer. 
+
+```{r}
+p1 <- ggplot(Enquete) +
+  geom_boxplot(aes(y = Budget, x = Employer), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Budget, x = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10)) +
+  xlab("Employer") + ylab("Budget") + ggtitle("Plot A")
+
+budget_den <- seq(min(Enquete$Budget), max(Enquete$Budget), 5)
+den <- c(dnorm(x = budget_den, 
+               mean = mean(Enquete$Budget[Enquete$Employer == "Prive"]), 
+               sd = sd(Enquete$Budget[Enquete$Employer == "Prive"])), 
+         dnorm(x = budget_den, 
+               mean = mean(Enquete$Budget[Enquete$Employer == "Public"]), 
+               sd = sd(Enquete$Budget[Enquete$Employer == "Public"])))
+
+den_data <- data.frame(budget_den = c(budget_den, budget_den), 
+                       den, 
+                       Employer = c(rep("Prive", length(budget_den)), 
+                                    rep("Public", length(budget_den))))
+
+p2 <- ggplot(Enquete, aes(x = Budget)) + 
+  geom_histogram(aes(y = ..density..), bins = 10, colour = 1, fill = "gray") +
+  geom_line(data = den_data, aes(x = budget_den, y = den)) +
+  facet_wrap( ~ Employer) +
+  theme_bw() +
+  theme(panel.grid = element_blank()) + ggtitle("Plot B")
+
+p3 <- ggplot(data = Enquete, mapping = aes(sample = Budget)) +
+  facet_wrap( ~ Employer) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 10), panel.grid = element_blank()) + ggtitle("Plot C")
+
+egg::ggarrange(p1, p2, p3, nrow = 2)
+```
+
+### What is the difference in food budget between employer and satisfaction?
+
+The budget is not different between satisfaction levels in public and private. Overall, the budget is higher in the private sector.  
+
+Table 2 shows the summary statistics for food budget by employer and satisfaction. For example, the average mean budget for employees from the private sector and public sector that are "peu satisfait" is 481.06 (95% CI: 394.31 to 567.81) and 376.21 (95% CI: 331.75 to 420.67) respectively.
+
+##### Table 2 Descriptive statistics for budget by employer and satisfaction
+
+```{r}
+summary_of_budget_2 <- Enquete %>%
+  mutate(Variable = "Budget", trick = 1) %>%
+  group_by(Variable, Employer, Satisfaction) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+mean = round(mean(Budget, na.rm=TRUE), 2), 
+            std_dev = round(sd(Budget, na.rm=TRUE), 2),
+            min = round(min(Budget, na.rm=TRUE), 2),
+            median = round(median(Budget, na.rm=TRUE), 2), 
+            max = round(max(Budget, na.rm=TRUE), 2), 
+            iqr = IQR(Budget, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), " to ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+DT::datatable(summary_of_budget_2, rownames = F)
+
+summary_of_budget_2 <- Enquete %>%
+  mutate(Variable = "Budget", trick = 1) %>%
+  group_by(Variable, Employer, Satisfaction) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = mean(Budget, na.rm=TRUE), 
+            std_dev = sd(Budget, na.rm=TRUE),
+            min = min(Budget, na.rm=TRUE),
+            median = median(Budget, na.rm=TRUE), 
+            iqr = IQR(Budget, na.rm=TRUE), 
+            max = max(Budget, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(lower_95CI = mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 
+         upper_95CI = mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)))
+
+```
+
+```{r}
+ggplot(data = summary_of_budget_2) +
+  geom_point(aes(x = Satisfaction, y = mean)) +
+  geom_errorbar(aes(x = Satisfaction, ymin = lower_95CI, ymax = upper_95CI), 
+                width = 0.1) +
+  facet_wrap( ~ Employer) +
+  xlab("Satisfaction") + ylab("Budget") +
+  theme_bw() +
+  theme(text = element_text(size = 20), axis.text.x = element_text(angle = 90))
+```
+
+
+
+```{r, include=FALSE}
+ggplot(data = summary_of_budget_2, aes(x = Satisfaction, y = Employer)) +
+  geom_tile(aes(fill = mean)) +
+  scale_fill_gradient(low = "yellow", high = "red", name = "Budget") +
+  theme_bw() +
+  ylab("Employer") + xlab("Satisfaction") +
+  theme(text = element_text(size = 20), axis.text.x = element_text(angle = 90))
+```
+
+
+
+## Student Test with categorical and numerical variable
+
+The Student test makes it possible to compare two sample means in order to see whether they are probably from the same population (null hypothesis H0) or, on the contrary, significantly different.
+
+More simply, this test gives the probability that an observed difference is due to chance.
+
+$$
+H0 : \mbox{There is no significant difference between the mean of the two variables} 
+$$
+$$
+H1 :  \mbox{There is a significant difference between the mean of the two variables} 
+$$
+
+```{r}
+t.test(Enquete$Budget~Enquete$Employer)
+
+```
+
+We can say that we have a significant difference between the average of the two variables (Budget & sector of employer)
+
+It means that the sector (employer) influences the budget of food
+
+It can also be noted that the average food budget in the private sector is 483 while in the public sector it is 387 .
+
+
+# Number of children Analysis
+
+Table 1 shows the summary statistics for the number of children. The average mean is 1.46	(95% CI: 1.2 to 1.72); with the average mean for the private sector being 1.19 (95% CI: 0.81 to 1.57) and for the public sector being 1.33 (95% CI: 1.32 to 2.02). 
+
+
+##### Table 1 - Descriptive statistics for number of children by employer
+
+```{r}
+# All participants
+sum_children_all <- Enquete %>%
+  mutate(Variable = "Children", trick = 1) %>%
+  group_by(Variable) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Children, na.rm=TRUE), 2), 
+            std_dev = round(sd(Children, na.rm=TRUE), 2),
+            min = round(min(Children, na.rm=TRUE), 2),
+            median = round(median(Children, na.rm=TRUE), 2), 
+            max = round(max(Children, na.rm=TRUE), 2), 
+            iqr = IQR(Children, na.rm=TRUE)) %>%
+  mutate(Employer = "All participants") %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), ", ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+# By employer
+sum_children_emp <- Enquete %>%
+  mutate(Variable = "Children", trick = 1) %>%
+  group_by(Variable, Employer) %>%
+  mutate(trick = 1) %>%
+  summarize(n = sum(trick), 
+            mean = round(mean(Children, na.rm=TRUE), 2), 
+            std_dev = round(sd(Children, na.rm=TRUE), 2),
+            min = round(min(Children, na.rm=TRUE), 2),
+            median = round(median(Children, na.rm=TRUE), 2), 
+            max = round(max(Children, na.rm=TRUE), 2), 
+            iqr = IQR(Children, na.rm=TRUE)) %>%
+  # Calculate the 95% CI based on a t-distribution
+  mutate(CI_95 = paste0(round(mean - qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2), ", ", 
+                        round(mean + qt(p = 0.975, df = n - 1) * (std_dev / sqrt(n)), 2)))
+
+sum_children_com <- bind_rows(sum_children_emp, sum_children_all)
+
+DT::datatable(sum_children_com, rownames = F, 
+              options = list(dom = "t"))
+```
+
+### What is the distribution of the number of children in the sample?
+
+In this section we test if the number of children has a normal distribution. From plots1 (A), (B) and (C) we can conclude that the number of children does not have a normal distribution, since:
+
+ * In plot 1, most of the points do not line up with the reference line. The same can be seen from the histogram Plot 1 B), as the data is far from being normally distributed. 
+
+
+Plot 1 shows key data visualizations to understand the overall distribution of the number of children. Plot 1 A) shows the box-plot by employer type, B) shows the histogram with the theoretical normal distribution by employer type, and C) shows the QQ-plot for normality by employer type. 
+
+#### Plots 1 to test the normality of the number of children
+
+```{r}
+p1 <- ggplot(Enquete) +
+  geom_boxplot(aes(y = Children), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Children, x = 0, col = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10), 
+        axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank()) +
+  xlab("") + ylab("Num. of Children") + ggtitle("Plot A")
+
+salary_den <- seq(min(Enquete$Children), max(Enquete$Children), 5)
+den <- dnorm(x = salary_den, 
+             mean = mean(Enquete$Children), 
+             sd = sd(Enquete$Children))
+den_data <- data.frame(salary_den, den)
+
+p2 <- ggplot(Enquete, aes(x = Children)) + 
+  geom_histogram(aes(y = ..density..), bins = 10, colour = 1, fill = "gray") +
+  geom_line(data = den_data, aes(x = salary_den, y = den)) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), text = element_text(size = 10)) + ggtitle("Plot B")
+
+p3 <- ggplot(data = Enquete, mapping = aes(sample = Children)) +
+  stat_qq_band() +
+  stat_qq_line() +
+  stat_qq_point() +
+  labs(x = "Theoretical Quantiles", y = "Sample Quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 10), panel.grid = element_blank()) + ggtitle("Plot C")
+
+egg::ggarrange(p1, p2, p3, nrow = 2)
+```
+
+
+The following table corresponds to the Shapiro-Wilk normality test for the number of children. Based on the data, the p-value is $8.65645962943463e-9$, which is $< 0.05$. This implies that the distribution of the data is significantly different from normal. To put it another way, we conclude with this test that the data is not normal.
+ 
+
+#### Table 2 - Normality test for Number of children
+
+```{r}
+# Normality check
+normality_test <- shapiro.test(Enquete$Children)
+normality_test_data <- data.frame(statistic = round(normality_test$statistic, 4), 
+                                  p_value = normality_test$p.value)
+DT::datatable(normality_test_data, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+### What is the difference in number of children between employer?
+
+Give that the data is not normally distributed, we use Wilcoxon test to make this analysis. We consider the following hypothesis:
+   
+$$
+H0 : \mbox{There is no significant difference between the mean of the two variables} 
+$$
+$$
+H1 :  \mbox{There is a significant difference between the mean of the two variables} 
+$$
+
+The p-value for the Wilcoxon test is $0.0206$ i.e $<0.05$, then we can say that we have statistically significant evidences to reject the null hypothesis, and thus we conclude that the means are different.
+
+#### Table 3 - Two sample Wilcoxon test sum test for comparing number of children by employers
+
+```{r}
+mu_test <- wilcox.test(x = Enquete$Children[Enquete$Employer == "Prive"], 
+                       y = Enquete$Children[Enquete$Employer == "Public"])
+
+mu_test_data <- data.frame(statistic = round(mu_test$statistic, 4), 
+                           p_value = round(mu_test$p.value, 4))
+
+DT::datatable(mu_test_data, rownames = F, 
+              options = list(dom = "t"))
+```
+
+
+   
+The following box plot shows that the employees from the public sector have in average more children than the one from the private sector.
+Also we can see a notably difference compare to the data salary, since here we have many outliers from both groups. 
+
+
+Plot 2 shows key data visualizations to understand the overall distribution of the number of children by employer. Plot 2 shows the box-plot by emplyoer type
+
+#### Plot 2 Overall distribution of the number of children by employer
+
+```{r}
+ggplot(Enquete) +
+  geom_boxplot(aes(y = Children, x = Employer), width = 0.3, outlier.shape = NA) +
+  geom_jitter(aes(y = Children, x = Employer, col = Employer), width = 0.1) +
+  theme_bw() +
+  theme(panel.grid = element_blank(), 
+        text = element_text(size = 10)) +
+  xlab("") + ylab("Num. of Children")
+```
+
+
+
+
+# Satisfaction
+
+The plot shows that there is a significant difference of satisfaction between the employers, we can see that in the public sector are "tres satisfait" compared to 23% from the private sector. However in the private sector, the majority of employees are "moyennement satisfait". 
+
+
+#### Plot 1 Percentage of satisfaction by employment sector
+
+```{r}
+sum_employer <- Enquete %>%
+  mutate(trick = 1) %>%
+  group_by(Employer) %>%
+  summarise(N = sum(trick))
+
+sum_satisfaction <- Enquete %>%
+  mutate(trick = 1) %>%
+  group_by(Employer, Satisfaction) %>%
+  summarise(n = sum(trick)) %>%
+  inner_join(sum_employer) %>%
+  mutate(percentage = (n / N) * 100, 
+         sum_tab = paste0(n, " (", round(percentage, 2), "%)"))
+
+#ggplot(data = sum_satisfaction) +
+ # geom_bar(aes(x = Employer, weight = percentage, fill = Satisfaction)) +
+  #theme_bw() +
+  #ylab("Percentage") + xlab("Employer") +
+  #theme(text = element_text(size = 10), axis.text.x = element_text(angle = 90))
+
+ggplot(data = sum_satisfaction) +
+  geom_bar(aes(x = Satisfaction, weight = percentage)) +
+  facet_wrap(~Employer) +
+  theme_bw() +
+  ylab("Percentage") + xlab("Satisfaction") +
+  theme(text = element_text(size = 10), axis.text.x = element_text(angle = 90))
+
+sum_satisfaction_table <- sum_satisfaction %>%
+  dplyr::select(Employer, Satisfaction, sum_tab) %>%
+  pivot_wider(id_cols = "Satisfaction",
+                     names_from = "Employer",
+                     values_from = "sum_tab")
+
+sum_satisfaction_all <- Enquete %>%
+  mutate(trick = 1) %>%
+  group_by(Satisfaction) %>%
+  summarise(n = sum(trick)) %>%
+  mutate(percentage = (n / 100) * 100, 
+         all = paste0(n, " (", round(percentage, 2), "%)")) %>%
+  dplyr::select(Satisfaction, all)
+
+sum_satisfaction_table <- sum_satisfaction_table %>%
+  inner_join(sum_satisfaction_all, by = "Satisfaction")
+
+DT::datatable(sum_satisfaction_table, rownames = F, 
+              options = list(dom = "t"), 
+              colnames = c("Satisfaction", "Prive", "Public", "All participants"))
+```
+
+### Test Chi-Square
+
+Chi-Square test is a statistical method which used to determine if two categorical variables have a significant correlation between them.
+
+The purpose of this part is to see if the sector of employment influences employee satisfaction, for this we used the chi-square test of independence .
+
+$$
+H0: \mbox{ The two variables are independent} 
+$$
+$$
+H1 :  \mbox{The two variables are dependent} 
+$$
+
+```{r}
+chisq.test(Enquete$Employer,Enquete$Satisfaction)
+```
+
+Here, we conclude that we reject H0 and the employer influences the satisfaction of employees .
+
+
+ * Observation: Since we have more than two groups to compare (peu safisfait, moyenne satisfait, tres satisfait ) we cannot use Wilxon or T-Student tests . In this situation (table 2 x 3 ), the ANOVA test is more accurate. 
+ 
+ * Moreover, note that for 2 x 2 table, the standard chi-square test in chisq.test() is exactly equivalent to prop.test() but it works with data in matrix form. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Conclusions 
+
+ * According to this study, the average salary and budget in the private sector are higher than those in the public sector. Both are influenced by the employment sector. 
+
+ * The employees from the public sector have in average more children that the ones from private sector. 
+
+ * It is evident that job satisfaction differs between the public and private sectors. Even though employees from the public sector are paid less than those from the private sector, we can see that nearly 50 percent of this population is "tres satisfait" compared to 23%.
+
+
+ * Unfortunately, we can not have an advanced analysis of satisfaction, since we have three groups of data "peu satisfait", "moyennement satisfait" and "tres satisfait", and the documentation suggests an ANOVA test. 
+  
+
+
+
+
+
+
+# References
+
+<div id="refs"></div>
+
+
+
+
+
+
+
+
+
+
+
+
