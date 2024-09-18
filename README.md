@@ -117,7 +117,7 @@ This project tackled **simple and multiple linear regression models** to predict
 
 [View HTML TP1 report](doc/TP1NEWToSubmit.html)
 
-[Download R Script](doc/TP1NEWToSubmit.Rmd)
+[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/doc/TP1NEWToSubmit.Rmd)
 
 ### **Linear Models Project (TP2)**  
 
@@ -139,6 +139,8 @@ This project involved using multiple **linear regression models** to predict ozo
 
 [View HTML TP2 report](TP2/TP2NEW2.html)
 
+[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/TP2/TP2NEW2.Rmd)
+
 
 ### **Linear Models Project (TP3)**  
 
@@ -152,7 +154,6 @@ This project focused on building and validating multiple **linear regression mod
 - R Programming (Libraries: `lm()`, `corrplot`, `leaps`)
 
 [View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
-
 
 ## Data Analysis Lecture
 
@@ -203,6 +204,8 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
   - `sf`, `tmap`, `leaflet`, `gridExtra`, `ggrepel`
 
 [View HTML Data Analisis project](project/Projet_Ritish_Andrea.html)
+
+[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/project/Projet_Ritish_Andrea.rmd)
 
 
 ##### **Recommendations for Further Study**:
