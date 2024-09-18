@@ -116,6 +116,7 @@ This project tackled **simple and multiple linear regression models** to predict
 - R Programming (Functions: `lm()`, `sweep()`, matrix operations)
 
 [View HTML TP1 report](doc/TP1NEWToSubmit.html)
+
 [Download R Script](doc/TP1NEWToSubmit.Rmd)
 
 ### **Linear Models Project (TP2)**  
