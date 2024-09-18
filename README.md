@@ -99,9 +99,8 @@ This project involved creating a console-based version of the popular Monopoly b
 *Master 1 in Modelisation Statistique master's project*  
 Université Franche-Comté, Besançon (2022 – 2023)
 
+
 ### **Linear Models Project (TP1)**  
-*Master 1 in Modelisation Statistique master's project*  
-Université Franche-Comté, Besançon (2022 – 2023)
 
 This project tackled **simple and multiple linear regression models** to predict apartment prices and body fat percentages using various predictors. The analysis explored the effects of centering, scaling variables, and even creating custom regression functions for better understanding of the data.
 
@@ -216,6 +215,7 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 
 ##### **Recommendations for Further Study**:
 A deeper analysis of communes in both regions, potentially including additional variables like salary, tax payments, and financial background to better understand economic conditions.
+
 
 ### Singular Value Decomposition (SVD) for Image Reconstruction
 
