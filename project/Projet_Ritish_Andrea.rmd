@@ -1,0 +1,1966 @@
+---
+title: "Exploring the Socioeconomic Differences Between Bourgogne and Franche-Comté Regions in 2012: A PCA Analysis"
+author: 'By A.V Hurtado Quiceno & Narain Ritish'
+date: "29-03-2023"
+output:
+  html_document:
+      toc: TRUE
+  pdf_document: 
+      toc: TRUE
+---
+```{r setup, include=FALSE}
+library(FactoMineR)
+library(utils)
+library(stats)
+library(ggiraphExtra)
+library(measurements)
+library(dplyr)
+library(corrplot)
+library(kableExtra)
+library(dplyr)
+library(factoextra)
+library(car)
+library(ellipse)
+library(devtools)
+library(webshot)
+library(tidyverse)
+library(SimDesign)
+library(tidyverse)
+library(ISwR)
+library(MASS)
+library(Sleuth3)
+library(tidyr)
+library(prettydoc)
+library(questionr)
+library(RColorBrewer)
+library(ggpubr)
+library(plotly)
+library(caret)
+library(ggforce)
+library(cluster)
+library(GGally)
+library(ggplot2)
+library(stringr)
+library(dendextend)
+library(leaps)
+
+library(vtable)
+#Packages MAPS
+library(sf)
+library(tmap)
+library(leaflet)
+library(gridExtra)
+library(ggrepel)
+```
+
+
+```{r, echo=FALSE, include=FALSE}
+#Data for the Maps
+extraWD <- "C:/Users/RITISH/Desktop/Semestre 8/Analyse Des Donnes/Projet 2/Analyse des donnes"
+
+
+if (!file.exists(file.path(extraWD, "departement.zip"))) {
+  githubURL <- "https://github.com/statnmap/blog_tips/raw/master/2018-07-14-introduction-to-mapping-with-sf-and-co/data/departement.zip"
+  download.file(githubURL, file.path(extraWD, "departement.zip"))
+  unzip(file.path(extraWD, "departement.zip"), exdir = extraWD)
+}
+
+departements_L93 <- st_read(dsn = extraWD, layer = "DEPARTEMENT",
+                            quiet = TRUE) %>% 
+  st_transform(2154)
+
+#Communes data
+
+extraWD <- "C:/Users/RITISH/Desktop/Semestre 8/Analyse Des Donnes/Projet 2/Analyse des donnes"
+# -- Communes --
+if (!file.exists(file.path(extraWD, "communes.zip"))) {
+  githubURL <- "https://github.com/statnmap/blog_tips/raw/master/2018-07-14-introduction-to-mapping-with-sf-and-co/data/communes.zip"
+  download.file(githubURL, file.path(extraWD, "communes.zip"))
+}
+unzip(file.path(extraWD, "communes.zip"), exdir = extraWD)
+
+# Read shapefile of French communes
+communes <- st_read(dsn = extraWD, layer = 'COMMUNE', quiet = TRUE) %>% 
+  select(NOM_COM, INSEE_COM)
+
+
+```
+
+
+
+# Introduction {.tabset}
+
+In this project, we will use a dataset from the 2012 national French census. The dataset give us information of the "Communes" and region with a population size exceeding 2000 individuals. 
+
+
+```{r, echo=FALSE}
+ggplot(departements_L93) +
+  aes(fill = CODE_REG) +
+  scale_fill_viridis_d() +
+  geom_sf() +
+  coord_sf(crs = 4326) +
+  guides(fill = "none") +
+  ggtitle("France") +
+  theme(title = element_text(size = 16),
+        plot.margin = unit(c(0,0.1,0,0.25), "inches"))
+```
+
+
+Our objective is to conduct an analysis of this data for the region of ```Franche-Comté``` and ```Bourgogne```. In the following map, we can have a visualization of the departments of Bourgogne and Franche-Compté. We will carry out an analysis of the housing status of the residents with their age group, gender, level of education, employment status and the housing type they live.
+
+
+```{r, echo=FALSE}
+# Map of the Bourgogne-Franche-Compte Regions
+Bourgogne <- 
+  departements_L93 %>% 
+  mutate_at(
+    vars(NOM_DEPT, NOM_REG),
+    tolower) %>% 
+  select(CODE_DEPT, NOM_DEPT, NOM_REG) %>% 
+  filter(NOM_REG == "bourgogne-franche-comte")
+
+
+ggplot(Bourgogne) +
+  geom_sf(aes(fill = NOM_DEPT)) +
+  scale_fill_viridis_d() +
+  ggtitle("Map of Bourgogne and Franche-Compte Departements")
+
+```
+
+
+* Burgundy, or Bourgogne in French, is a region located in the eastern part of France. It is famous for its world-renowned wines and its rich cultural heritage The region is made up of four departments: ```Yonne```, ```Cote-d'Or```, ```Saone-et-Loire```, and ```Nievre```.  Today, the region is known for its production of world-renowned wines and high-quality food products such as Dijon mustard. In more recent times, the region has undergone significant economic and demographic changes, with a decline in traditional industries such as agriculture and manufacturing, and a rise in the service sector. As of 2012, the population of the Bourgogne region was estimated to be around 1.6 million people, with ```Dijon``` being the largest city and the regional capital.The region is home to numerous historical landmarks, such as the Abbaye de Fontenay and the Hospices de Beaune, which attract many visitors every year.
+
+
+
+* The Franche-Comte region is located in the eastern part of France, bordering Switzerland. It is made up of four departments: ```Doubs```, ```Jura```, ```Haute-Saone```, and ```Territoire de Belfort```. Historically, the region was known for its watchmaking industry and its strategic location between France and Switzerland. However, in the 20th century, the region experienced significant economic decline as traditional industries such as agriculture and manufacturing struggled to compete in a globalized market. In recent years, the region has attempted to revitalize its economy by focusing on high-tech industries such as microelectronics and nanotechnology, as well as promoting tourism and cultural heritage sites. As of 2012, the population of Franche-Comte was estimated to be around 1.2 million people, with ```Besancon``` being the largest city and the regional capital. The region is known for its beautiful natural landscapes, including the Jura Mountains, and its rich cultural heritage, which includes the historic city of Besancon and numerous museums and art galleries.
+
+
+
+
+
+## Data Variable and Category Details
+
+The demographic study of Bourgogne and Franche-Comté will involve an analysis of its individual "communes," with two separate analyses to be conducted. All data will be presented as percentages.
+ 
+ * Person belonging to an age class:
+   + 15-29 years old (age_15_29)
+   + 30-74 years old (age_30_74_pct)
+   + 75 years old or more (age_75p)
+  
+ * Gender of the residents:
+   + Men (pop_hommes_pct)
+   + Women (femmes)
+ 
+ * The level of Education:
+   + No Diploma (dipl_aucun)
+   + Has at least one diploma (has_dip)
+  
+ * Employment Status:
+   + Population having an occupation (agric, indep, cadres, interm, ouvr)
+   + Population having no occupation (chom)
+
+
+ *  Housing type of residents:
+   + Living in secondary housing (resid_sec)
+   + Living in HLM (hlm)
+   + Living in a home (maison)
+   + Living in a appartment (appart)
+  
+ 
+ * Housing status of residents:
+   + Owner of a property (proprio)
+   + Renting a property (locataire)
+  
+  
+**Variables names index in R code**
+
+* Data_Ques_df : All the data of the data set
+* vars: Names of the column variables
+* bg_fc: Region of Bourgogne and Franche-Comté only
+* unemp_rate: Unemployment rate
+* data_Women_Men: % of Men and Women per region
+
+
+Using the dataset, we will look to do an analysis of the relationship of the mentioned variables and have insight of the economical status of the people of Bourgogne and Franche comté as follows:
+
++ What is the relationship between the housing type of the residents and their education and employment status?
+
++ Does the gender of a person is correlated to their type of occupation and education level for each region?
+
++ Does living in a property type for a person is influenced by their gender, occupation status or education?
+
+
+As a first step, we will create the 3 new variables that is missing for our analysis and use it along with the chosen variables as follows:
+
+
+ + ``` has_dip = pop_dipl_bepc + pop_dipl_capbep + pop_dipl_bac + pop_dipl_bac2 + pop_dipl_sup ```
+ + ``` pop_30_74 = pop_tot - pop_0_14 - pop_15_29 - pop_75p ```
+ + ``` pop_hommes=pop_tot - pop_femmes ```
+
+
+
+```{r, echo=FALSE, results='hide'}
+Data_Ques <-data("rp2012")
+Data_Ques_df<- data.frame(rp2012)
+
+Data_Ques_df <- Data_Ques_df %>%
+  mutate(region = gsub("\u00e9", "e", region))
+Data_Ques_df 
+
+#Renaming this variables for the maps in the future
+
+Data_Ques_df <- Data_Ques_df %>%
+  rename(INSEE_COM = code_insee)
+
+#str(Data_Ques_df)
+vars <-colnames(Data_Ques_df)
+
+```
+
+
+
+
+```{r, echo=TRUE, include=FALSE}
+print.function("Data of Bourgogne and Franche-Comte")
+bg_fc <-filter(Data_Ques_df,Data_Ques_df$region == "Franche-Comte" | Data_Ques_df$region == "Bourgogne")
+
+colnames(bg_fc)<-colnames(bg_fc)
+
+```
+
+
+
+
+```{r, echo=TRUE, include=FALSE}
+
+bg_fc <- bg_fc %>% 
+  mutate(pop_emp = pop_agric + pop_indep + pop_cadres + pop_interm + pop_ouvr,
+         Unk_occup = pop_tot - pop_emp - pop_chom,
+         has_dip = pop_dipl_bepc + pop_dipl_capbep + pop_dipl_bac + pop_dipl_bac2 + pop_dipl_sup, 
+         pop_30_74 = pop_tot - pop_0_14 - pop_15_29 - pop_75p,
+         pop_hommes=pop_tot - pop_femmes)
+
+# Add the percentages of the new variables
+
+bg_fc <- bg_fc %>% 
+  mutate(pop_emp_pct = pop_emp/pop_tot*100,
+         Unk_occup_pct = Unk_occup/pop_tot*100,
+         has_dip_pct = has_dip/pop_tot*100, 
+         age_30_74_pct = pop_30_74/pop_tot*100,
+         pop_hommes_pct = pop_hommes/pop_tot*100
+         )
+
+# Join database with shape file by attributes (this is to join our data, with the data of the map)
+Join_Data_Map <- communes %>%
+  right_join(bg_fc, 
+             by = "INSEE_COM") %>% 
+st_transform(2154) 
+Join_Data_Map
+```
+
+
+```{r, echo=FALSE, include=FALSE}
+#The data by department
+Data_Ques_dept <- bg_fc %>% group_by(departement)
+
+```
+
+
+## Description of the Variables in the data set 
+
+```{r, echo=FALSE}
+## Description of the variables in the dataset
+variables <- colnames(Data_Ques_df)
+
+
+descriptionvariables <- data.frame(
+  Column_Name = variables,
+  Description = c("INSEE code", 
+                  "Commune ", 
+                  "Postal code of the region.", 
+                  "Name of the region ", 
+                  "Code of the department", 
+                   "Name of the department",
+                   "Total Population",
+                   "Population Class", 
+                   "Population aged 0-14 years",
+                   "Population aged 15-29 years",
+                   "Population between 18-24 years",
+                   "Population aged 75 years and over",
+                   "Population of Women",
+                   "Population having a main property",
+                   "Population with unemployed individuals ",
+                   "Population working in agriculture",
+                   "Population of Independent employment",
+                   "Population working as managers or executives",
+                   "Population working in intermediate professions",
+                   "Population Employed (salariés)  ",
+                   "Manual workers",
+                   "Population aged between 18-24 pursuing an education",
+                   "Population not in school aged 15",
+                   "Population having no diploma",
+                   "Population having a BEPC diploma (a French diploma obtained after completing lower secondary education)",
+                   "Population having a CAP or BEP diploma (a French vocational diploma obtained after completing secondary
+                    education)",
+                   "Population having a Baccalaureate diploma (a French diploma obtained after completing upper secondary education)",
+                   "Population having a 2-year post-Baccalaureate diploma (a French diploma obtained after completing 2 years of higher                     education after the  Baccalaureate).",
+                   "Population with a higher education diploma (more than 2 years of higher education)",
+                   "Population having a main residential property",
+                   "Population owning their own home",
+                   "Population renting their home",
+                   "Population living in HLM (French social housing program)",
+                   "Population living in social housing ",
+                   "Population living in a house",
+                   "Population living in an apartment",
+                   "Percentage of population aged 0-14 years",
+                   "Percentage of population aged 15-29 years",
+                   "Percentage of population aged 75 years and over",
+                   "Percentage of female population",
+                   "Percentage of unemployed population",
+                   "Percentage of population working in agriculture",
+                   "Percentage of population working as independent workers",
+                   "Percentage of population working as managers or executives",
+                   "Percentage of population working in intermediate 
+                  professions",
+                   "Percentage of population working as employees (salariés)",
+                   "Percentage of population working as manual workers",
+                   "Percentage of population studying",
+                   "Percentage of population with no diploma",
+                   "Percentage of population with a BEPC diploma (a French 
+                  diploma obtained after completing lower               secondary education)",
+                   "Percentage of population with a CAP or BEP diploma (a  French vocational diploma obtained after 
+                  completing secondary education)",
+                   "Percentage of population with a Baccalaureate diploma (a French diploma obtained after completing upper                     secondary education)",
+                   "Percentage of population with a 2-year post-Baccalaureate diploma (a French diploma obtained after                         completing 2 years of higher education after the Baccalaureate)",
+                   "Percentage of population with a higher education diploma (more than 2 years of higher education)",
+                   "Percentage of population living in social housing",
+                   "Percentage of population owning a home ",
+                   "Percentage of population renting a home",
+                   "Percentage of population living in HLM (French social housing program)",
+                   "Percentage of population living in a house",
+                   "Percentage of population living in an apartment"
+                  ))
+kable(descriptionvariables, format = "markdown")
+```
+
+# Descriptive Statistics {.tabset}
+
+We will proceed to extract some descriptive statistics from our data for the regions of Bourgogne and Franche Comté.
+
+
+## Population concentration of Bourgogne and Franche-Comte
+
+In the following map, we can have an overview of the concentration of the population.
+
+```{r, echo=FALSE}
+ggplot() +
+  geom_sf(data = departements_L93, colour = "#BFBFBF") +
+  geom_sf(data = Bourgogne, fill = "#3F3F88", colour = "grey60") +
+  geom_sf(data = Join_Data_Map, aes(fill = pop_tot), color = NA) +
+  scale_fill_gradient(low = "#FDE725", high = "#440154") +
+  coord_sf(crs = 2154, datum = sf::st_crs(2154),
+           xlim = st_bbox(Bourgogne)[c(1,3)],
+           ylim = st_bbox(Bourgogne)[c(2,4)]
+  ) +
+  theme(title = element_text(size = 16),
+        panel.background = element_rect(fill = "#BFBFBF")) +
+  ggtitle("Communes population in both regions")
+
+```
+
+
+```{r, echo=FALSE}
+#Top 20 communes more populated in both regions 
+
+# Assing colors to communes based on their region
+bg_fc_population_top20 <- bg_fc %>%
+  arrange(desc(pop_tot)) %>%
+  head(20) %>%
+  mutate(region_color = ifelse(region == "Bourgogne", "#9999CC", "#FFCC99"))
+
+ggplot(bg_fc_population_top20, aes(x = commune, y = pop_tot, fill = region_color)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  labs(title = "Top 20 Communes by Population in Bourgogne and Franche-Comte",
+       x = "Commune",
+       y = "Population",
+       fill = "Region") +
+  scale_fill_identity(guide = "legend", labels = c("Bourgogne", "Franche-Comte"))
+
+```
+
+From the bar plot above, we can see a higher number of residents census data from Dijon, Chalon-Sur-Saône and Nevers from the Bourgogne region. From the Franche-Comté region, we have a high number of residents data from Besançon and Belfort.
+
+
+```{r, echo=FALSE}
+
+# Population of Bourgogne Region by the most populated communes in Bourgogne Region 
+bg_pop_plot <- bg_population_top10 <- bg_fc %>%
+  filter(region == "Bourgogne") %>%
+  arrange(desc(pop_tot)) %>%
+  head(25) %>%
+  select(commune, pop_tot)
+
+#The first 25 most populated regions in Franche-Comte Regions
+fc_pop_plot <- fc_population_top10 <- bg_fc %>%
+  filter(region == "Franche-Comte") %>%
+  arrange(desc(pop_tot)) %>%
+  head(25) %>%
+  select(commune, pop_tot)
+
+# Create a plot of the top 10 communes in Franche-Comte
+fc_plot <- ggplot(fc_population_top10, aes(x = commune, y = pop_tot)) +
+  geom_bar(stat = "identity", fill = "#FFCC99") +
+  coord_flip() +
+  labs(title = "Top 10 Communes by \n Population in Franche-Comte",
+       x = "Commune",
+       y = "Total Population")
+
+# Create a plot of the top 10 communes in Bourgogne
+bg_plot <- ggplot(bg_population_top10, aes(x = commune, y = pop_tot)) +
+  geom_bar(stat = "identity", fill = "#9999CC") +
+  coord_flip() +
+  labs(title = "Top 10 Communes by \n Population in Bourgogne",
+       x = "Commune",
+       y = "Total Population")
+
+grid.arrange(fc_plot, bg_plot, ncol = 2)
+```
+
+
+
+
+```{r, echo=FALSE, include=FALSE}
+## Age groups by regions
+
+#We have 4 age groups categorized as 0-14, 15-29, 30-74 and 75+. We can see from the bar chart that we have more population from the age group census data from the group 30-74.
+
+reg_age <- bg_fc %>% 
+  group_by(region) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29=sum(pop_15_29),
+            pop_30_74=sum(pop_30_74), 
+            pop_75p=sum(pop_75p)) %>%
+  mutate(age_0_14 = round((pop_0_14/pop_tot)*100, 2),
+         age_15_29 = round((pop_15_29 /pop_tot)*100, 2), 
+         age_30_74 = round(( pop_30_74/pop_tot)*100, 2),
+         age_75p = round(( pop_75p/pop_tot)*100, 2)) %>%
+  dplyr::select(region, age_0_14, age_15_29, age_30_74, age_75p)
+```
+
+
+## Age group by gender of the population 
+
+```{r, echo=FALSE}
+  age_sex <- bg_fc %>%
+  group_by(region) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29=sum(pop_15_29),
+            pop_30_74=sum(pop_30_74), 
+            pop_75p=sum(pop_75p),
+            Hommes = sum(pop_hommes),
+            Femmes = sum(femmes)) %>%
+  dplyr::select(region,Hommes,Femmes, pop_0_14, pop_15_29, pop_30_74, pop_75p)
+
+```
+
+```{r, echo=TRUE}
+ age_sex_long <- age_sex %>% 
+  gather(key = "age_group", value = "population", pop_0_14, pop_15_29, pop_30_74, pop_75p) %>% 
+  gather(key = "gender", value = "count", Hommes, Femmes)
+
+ggplot(age_sex_long, aes(x = region, y = count, fill = age_group)) +
+  geom_bar(stat = "identity", position = "stack") +
+  facet_wrap(~ gender, ncol = 2, scales = "free_y") +
+  labs(title = "Population by Age Group, Region, and Gender", x = "Region", y = "Population") +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "#009E73", "#F0E442")) +
+  theme_minimal()
+```
+
+From then bar chart above, we can see a larger number of mens than women in both regions. We can also notice of the proportion of age groups of different gender is almost distributed with the same proportions with their respective totals in both Bourgogne and Franche Comté.
+
+
+## Unemployment rate by region and department
+
+
+```{r, echo=FALSE, include=FALSE}
+unemp_rate <- bg_fc %>% 
+  group_by(region) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29=sum(pop_15_29),
+            pop_18_24=sum(pop_18_24), 
+            pop_75p=sum(pop_75p),
+            femmes = sum(pop_femmes),
+            pop_chom=sum(pop_chom)) %>%
+  mutate(age_0_14 = round((pop_0_14/pop_tot)*100, 2),
+         age_15_29 = round((pop_15_29 /pop_tot)*100, 2), 
+         age_18_24 = round(( pop_18_24/pop_tot)*100, 2),
+         age_75p = round(( pop_75p/pop_tot)*100, 2),
+         unemployment_rate = round((pop_chom/pop_tot)*100, 2)) %>%
+  dplyr::select(region, unemployment_rate)
+
+unemp_rate <- unemp_rate[order(-unemp_rate$unemployment_rate),]
+
+```
+
+
+```{r, echo=FALSE}
+unemp_gg <- ggplot(unemp_rate, aes(x = region, y = unemployment_rate)) +
+  geom_bar(stat = "identity", fill = "#9999CC") +
+  labs(title = "Unemployment Rates by Region",
+       x = "Region",
+       y = "Unemployment Rate (%)") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+unemp_gg
+```
+
+```{r, echo=FALSE}
+
+unemp_rate_depart <- bg_fc %>% 
+  group_by(departement) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29=sum(pop_15_29),
+            pop_18_24=sum(pop_18_24), 
+            pop_75p=sum(pop_75p),
+            femmes = sum(pop_femmes),
+            pop_chom=sum(pop_chom)) %>%
+  mutate(age_0_14 = round((pop_0_14/pop_tot)*100, 2),
+         age_15_29 = round((pop_15_29 /pop_tot)*100, 2), 
+         age_18_24 = round(( pop_18_24/pop_tot)*100, 2),
+         age_75p = round(( pop_75p/pop_tot)*100, 2),
+         unemployment_rate = round((pop_chom/pop_tot)*100, 2)) %>%
+  dplyr::select(departement, unemployment_rate)
+
+unemp_rate_depart <- unemp_rate_depart[order(-unemp_rate_depart$unemployment_rate),]
+
+num_depts <- length(unique(unemp_rate_depart$departement))
+dept_colors <- dept_colors <- c("#CC6699","#9999CC","#CC99FF","#FFCC66","#66CCCC","#FF99CC","#CCCC66","#9966CC")
+
+unemp_gg_depar <- ggplot(unemp_rate_depart, aes(x = departement, y = unemployment_rate, fill = departement)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = dept_colors) +
+  labs(title = "Unemployment Rates by Departments",
+       x = "Department",
+       y = "Unemployment Rate (%)") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1))
+
+unemp_gg_depar
+```
+
+From both the bar charts, we see the level of unemployment is higher in Franche comté than in Bourgogne. When we observe the unemployment per departments for those two regions, Territoire de Belfort, Yonne, Doubs and Haute-Saône has the highest level of unemployment.
+
+
+
+## Percentage of Employment per department 
+
+```{r, echo=FALSE}
+G_plot <-ggplot(data=bg_fc,
+                mapping = aes(x=region,y= empl, col  = departement)) + 
+  geom_boxplot()
+G_plot
+```
+
+
+
+## People having no diploma per Region and Department
+
+```{r, echo=TRUE}
+G_age <- ggplot(data = bg_fc, mapping = aes(x = departement, y = dipl_aucun, col = region)) + 
+  geom_boxplot() + facet_grid() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+G_age
+```
+
+We can see higher percentages of individuals without a diploma qualification in haut Saône and Yonne.
+
+
+## Housing Ownership by regions
+
+```{r, echo=FALSE, include=FALSE}
+data_Housing_Ownership <- bg_fc %>% 
+  group_by(region) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29 = sum(pop_15_29),
+            pop_18_24 = sum(pop_18_24), 
+            pop_75p = sum(pop_75p),
+            femmes = sum(pop_femmes),
+            hommes = sum(pop_hommes),
+            log_proprio=sum(log_proprio),
+            log_loc=sum(log_loc)
+            ) %>%
+  mutate(age_0_14 = round((pop_0_14/pop_tot)*100, 2),
+         age_15_29 = round((pop_15_29 /pop_tot)*100, 2), 
+         age_18_24 = round((pop_18_24/pop_tot)*100, 2),
+         age_75p = round((pop_75p/pop_tot)*100, 2),
+         perc_hommes = round((hommes/pop_tot)*100,2),
+         perc_femmes = round((femmes/pop_tot)*100, 2), 
+         perc_propio=round((log_proprio/pop_tot)*100,2),
+         perc_locataire=round((log_loc/pop_tot)*100,2)) %>%
+  dplyr::select(region, perc_propio, perc_locataire)
+```
+
+```{r, echo=FALSE}
+kable(data_Housing_Ownership)
+gg_Ownership <- data_Housing_Ownership %>% 
+  pivot_longer(cols = c("perc_propio","perc_locataire"), 
+                 names_transform = list(name = function(x) {
+                 str_replace_all(x, "perc_propio", "Owner") %>% 
+                 str_replace_all("perc_locataire", "Locataire") 
+                 })) %>%
+  ggplot() +
+  geom_bar(aes(x=region, weight=value, fill=name), position = position_dodge()) +
+  scale_fill_manual(name="Range",
+                     values = c("Owner"="#CC6699", "Locataire"="#9999CC"))
+
+gg_Ownership
+```
+
+We can see a higher percentage of people that renting a property to live than owning one in the Franche comté region. This is the opposite for the Bourgogne region that have a relatively higher percentage of people owning their home .
+
+
+## Type of Housing by regions
+
+
+```{r, include=FALSE}
+data_Housing_Type <- bg_fc %>% 
+  group_by(region) %>%
+  summarise(pop_tot = sum(pop_tot), 
+            pop_0_14 = sum(pop_0_14), 
+            pop_15_29 = sum(pop_15_29),
+            pop_18_24 = sum(pop_18_24), 
+            pop_75p = sum(pop_75p),
+            femmes = sum(pop_femmes),
+            hommes = sum(pop_hommes),
+            log_proprio = sum(log_proprio),
+            log_loc = sum(log_loc), 
+            log_sec = sum(log_sec),
+            log_maison = sum(log_maison),
+            log_appart = sum(log_appart)
+            ) %>%
+  mutate(age_0_14 = round((pop_0_14/pop_tot)*100, 2),
+         age_15_29 = round((pop_15_29 /pop_tot)*100, 2), 
+         age_18_24 = round((pop_18_24/pop_tot)*100, 2),
+         age_75p = round((pop_75p/pop_tot)*100, 2),
+         perc_hommes = round((hommes/pop_tot)*100,2),
+         perc_femmes = round((femmes/pop_tot)*100, 2), 
+         perc_propio = round((log_proprio/pop_tot)*100,2),
+         perc_locataire = round((log_loc/pop_tot)*100,2),
+         perc_sec = round((log_sec/pop_tot)*100,2),
+         perc_maison = round((log_maison/pop_tot)*100,2),
+         perc_appart = round((log_appart/pop_tot)*100,2)) %>%
+  dplyr::select(region, perc_sec,perc_maison, perc_appart)
+```
+
+
+```{r, echo=FALSE}
+kable(data_Housing_Type)
+
+plot_Housing_Type <- data_Housing_Type %>% 
+  pivot_longer(cols = c("perc_sec","perc_maison", "perc_appart"), 
+                 names_transform = list(name = function(x) {
+                 str_replace_all(x, "perc_sec", "Secondary") %>% 
+                 str_replace_all("perc_maison", "House") %>%
+                 str_replace_all("perc_appart", "Appartment")    
+                 })) %>%
+  ggplot() +
+  geom_bar(aes(x=region, weight=value, fill=name), position = position_dodge()) +
+  scale_fill_manual(name="Type",
+                     values = c("Secondary"="#CC6699", "House"="#9999CC", "Appartment"="#FFCC66"))
+
+plot_Housing_Type
+```
+
+We can see a higher percentage of individuals living in an appartment in both the region. However, there is only a small percentage of people living in social housing in both region.
+
+
+
+
+## General Analysis of the data (Correlation)
+
+We got some insights of the data of both the Bourgogne and Franche-Comté. We have seen some differences between the regions and the variables do not show the same insight. Now, we are going to study the dataset of the 2 regions (Bourgogne and Franche-Comté) to see if there exists relationships between the variables. 
+
+
+
+```{r, echo=FALSE}
+##Extracting the relevant variables for the PCA analysis, we extract 19 variables
+bg_fc.PCA <- bg_fc %>%
+  dplyr::select(age_15_29,  age_30_74_pct, age_75p, femmes, pop_hommes_pct, chom, agric, indep, cadres, interm, ouvr, dipl_aucun,
+                has_dip, resid_sec, proprio, locataire, hlm , maison, appart)
+
+bourg_dat <-  bg_fc %>% dplyr::filter(region %in% c("Bourgogne"))
+
+bourg_dat1 <- bourg_dat %>%
+  dplyr::select(age_15_29,  age_30_74_pct, age_75p, femmes, pop_hommes_pct, chom, agric, indep, cadres, interm, ouvr, dipl_aucun,
+                has_dip, resid_sec, proprio, locataire, hlm , maison, appart)
+
+## Data set for the Franche-Compte Region
+
+FC_dat <- bg_fc %>% 
+  dplyr::filter(region %in% c( "Franche-Comte"))
+
+FC_dat1 <- FC_dat %>%
+  dplyr::select(age_15_29,  age_30_74_pct, age_75p, femmes, pop_hommes_pct, chom, agric, indep, cadres, interm, ouvr, dipl_aucun,
+                has_dip, resid_sec, proprio, locataire, hlm , maison, appart)
+
+# NA's Check
+#any(is.na(bourg_dat1))
+#any(is.na(FC_dat))
+
+#Correlation Matrix
+corr_matrix <- cor(bg_fc.PCA)
+corr_matrix_bg <- cor(bourg_dat1)
+corr_matrix_fc <- cor(FC_dat1)
+```
+
+
+
+### Bourgogne and Franche-Comte correlation plot
+
+```{r, echo=FALSE}
+corrplot(corr_matrix, method = "ellipse", type = "upper", tl.srt = 45)
+title("Bourgogne and Franche-Comte Region", adj = 0.5, line = 1.9,cex.main=1)
+```
+
+
+The correlation plot shows that darker colors indicate higher correlation, and the orientation of the ellipse indicates the sign of the correlation. We can observe the following relationship between our variables:
+
+
++   People aged 15-29 is positively correlated with having a diploma, renting a house,
+    living in HLM and apartments, and negatively correlated with owning a house.
+    Age 30-74 has the opposite behavior. And age 75 and plus, positively correlated with women and negatively with men.
+
++   opposite behaviours of the genders can be observed.We can see positive correlation of renting, living in HLM and appartments       while owning a property and a house have a negative correlation.
+    Conversely, the men category shows the opposite behavior.
+
++   The unemployment category (chom) is positively correlated with
+    manual workers, has diploma, renting, living in HLM and apartments,
+    and negatively correlated with owning a house and living in a house.
+
++   The cadre category is positively correlated with intermediate jobs
+    and negatively correlated with manual workers and no diploma
+    category.
+
++   The education category (no diploma and diploma) is negatively
+    correlated with owning a house and positively correlated with
+    renting, living in HLM and apartments.
+
++   The housing category shows that owning a house is positively
+    correlated with owning a property and negatively correlated with
+    living in HLM and apartments. Renting and living in HLM show the
+    opposite behavior.
+
+
+We will now have a different correlation plot for each region.
+
+
+### Bourgogne Correlation plot
+
+```{r, echo=FALSE}
+corrplot(corr_matrix_bg, method = "ellipse", type = "upper", tl.srt = 45)
+title("Bourgogne Region", adj = 0.5, line = 1.9,cex.main=1)
+```
+
+
+We can observe similar correlations for the Bourgogne region compared with the correlation of both the regions.
+
+
+### Franche-Compte Correlation plot
+
+```{r, echo=FALSE}
+corrplot(corr_matrix_fc, method = "ellipse", type = "upper", tl.srt = 45)
+title("Franche-Comte Region", adj = 0.5, line = 1.9,cex.main=1)
+```
+
+The correlation plot for the Franche-Comte region reveals the following
+differences:
+
++   The age category of 75 years and above shows a strong positive
+    correlation with women and a negative correlation with men.
+
++   The gender category shows a similar trend but with weaker
+    correlation than the last correlation plots.
+
++   The housing type behavior in the gender category does not exhibit a
+    significant correlation.
+
++   The type of employment category exhibits a similar trend, with
+    stronger correlation as indicated by darker colors, particularly
+    with respect to the type of housing.
+
+
+
+### Analysis
+
+We have seen that many variables of the data are correlated. We will use the Principal Component Analysis reduction method lower-dimensional representation while preserving the majority of the original data's variability of the dataset. We will have a PCA analysis for Bourgogne and Franche comté using variables of the category population age group, gender, education level, employment status, housing type and housing status.
+
+
+
+
+
+# Bourgogne (BG) and Franche-Comté Region (FC) {.tabset}
+
+We do a PCA on a on a set of 18 variables extracted from the census data ```rp2012```. These variables capture different aspects, such as gender (```male``` or ```female```), education (```has diploma``` or ```no diploma```) , employment (```unemployed```, ```agriculture```, ```independent```, ```managers```, ```interm``` and ```ouvr workers```), housing (```owner```, ```rent```, ```HLM```, ```house```, ```apartment```, ```resid_sec```), and age groups (```15-29```, ```30-74``` and ```>75```). Below is the analysis of both the region together.
+
+
+## Variance of the variables
+
+In order to determine the most suitable PCA analysis to conduct in this case, we examine the variance of our variables.
+
+
+```{r, echo=FALSE}
+## Standardized the data and then apply the PCA
+kable(round(var(bg_fc.PCA)*(194/195), 2), format = "markdown")
+```
+
+
+It appears that the variances of the variables exhibit notable differences in importance (for example in the variable ```has_dip```). In order to address this problem and ensure accurate analysis, we will implement standardized PCA to scale the variances appropriately.
+
+
+## PCA {.tabset}
+
+```{r, echo=FALSE}
+## Standardized the data and then apply the PCA
+dat.pca <- as.data.frame(bg_fc.PCA)
+PCA_Resul_std <- scale(dat.pca)
+PCA_sd <- PCA(PCA_Resul_std, graph = FALSE)
+```
+
+
+```{r,echo=TRUE}
+kable(PCA_sd$eig[1:4,], digits = 3, format = "markdown")
+fviz_eig(PCA_sd)
+```
+
+The PCA reduced the dimension of the dataset and we will keep 3 axes which explains explain ```75.89%``` of the variance of the data. We will carry out our analysis with 3 axes.
+
+### Dimensions
+
+```{r,echo=TRUE}
+kable(PCA_sd$var$coord[,1:3], digits = 3, format = "markdown")
+```
+
+
+
+**Component Summaries **
+
+
+**PCA- Dim.1**
+
+The age group 30-74, unemployed individuals (chom), owning a house (propio), rent (locataire), living in a house (maison) or apartment (appart), and hlm are the categories that are better represented by the first principal components. Additionally, the category with no diploma (dipl_aucun) is also well represented. 
+
+ 
+**PCA - Dim.2**
+
+ 
+The cadres are the best represented in this dimesion. Followed by interm, manual workers (ouvr).  
+
+ 
+**PCA - Dim.3**
+
+The age group $>75$, women, men are the better represented in this dimension
+
+
+### Contribution 
+
+```{r,echo=TRUE}
+kable(PCA_sd$var$contrib[,1:3], digits = 3, format = "markdown")
+fviz_pca_contrib(PCA_sd, choice = "var", axes = 1)
+```
+
+According to the contribution plot, the individuals who are tenants (```locataire```), property owners (```propio```), living in a house or apartment, living in subsidized housing (```HLM```), and unemployed have made the greatest contribution to the data.
+
+
+
+### Dimension 1 and 2
+
+```{r, echo=FALSE}
+kable(PCA_sd$var$cos2[,1:3], digits = 3, format = "markdown")
+```
+
+The age groups of 30-74 and 15-29 are better represented in dimensions 1 and 2. Similarly, the categories of education attainment (diploma and no diploma), job types (cadres, intermediate, manual workers, and unemployed), and housing types (living in a house, owning a house, tenants, apartment, and HLM) are also well-represented in these dimensions.
+
+
+### PCA Correlation Circle 
+
+From our previous component summary for dimension 1 and 2, we have that The age group 30-74, unemployed individuals (chom), owning a house (propio), tenants (locataire), living in a house (maison) or apartment (appart), and hlm are the categories that are better represented by the first principal components. Additionally, the category with no diploma (dipl_aucun) is also well represented. 
+
+
+```{r,echo=FALSE}
+cir_bf12 <- fviz_pca_var(PCA_sd, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(1,2))
+cir_bf12
+
+```
+
+
+
+
+* We observe the following variables to interpret the first axe:
+
+ * The level of Education:
+   + No Diploma
+
+ * Employment Status:
+   + Manual Workers
+   + Employment status unknown
+  
+ * Population age group:
+   + 15-29 years old
+
+  * Housing Status of residents:
+    + Living in HLM
+    + Living in a appartment
+    + Renting (locataire)
+
+  
+On the opposite direction:
+
+  * Housing Status of residents:
+    + Living in a house
+    + Owning a property. 
+  
+  * Population age group:
+    + 30-74 years old
+    
+    
+*The second axe:     
+
+
+ * The level of Education:
+   + No Diploma
+   + Has diploma (has_dipl)
+   
+   
+ * Employment Status:
+   + manual workers (ouvr)
+   + Interm
+   + Managers (Cadres)
+  
+
+**Intepretation of the first axe:**
+
++ We can see that a manual worker (ouvr) has a close correlation of not having a diploma.
+
++ We also see that people who lives in hlm residences have a correlation with being unemployed and inversely correlated of having a house and being the owner.
+
++ People aged 30 to 74 years old are correlated of having a house and being the owner.
+
++ A person who rents a property is correlated with living in an appartment and inversely correlated of owing in a house as owner.
+
+
+**Intepretation of the second axe:**
+
++ People aged 15_29 is correlated of having at least one diploma and inversely correlated with older people of working as interim and be an executive. 
+
+
++ A person is inversely correlated of working as an executive (cadre) with a manual worker (ouvr).
+
+
+
+```{r, echo=FALSE}
+sca12 <-fviz_pca_ind (PCA_sd, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE, 
+             axes = c(1,2))
+sca12
+```
+
+
+125 (Branges - BG) and 142 (Gergy - BG) shows the communes having people correlated with owning a home  between 30 and 74 years old. The communes 138 (Le Creusot - BG) and 179 (Sens - BG) show an inverse relationship of renting an appartment for younger people aged 15 and 29 years old.
+ 
+
+
+
+### Dimension 1 and 3
+
+We can see that individuals aged 15-29, 30-74, and >75 are well-represented in terms of age groups. Those without a diploma are more strongly represented in education. Housing types such as maison, propio, locataire appart, and hlm are well-represented, as are the unemployed. Additionally, both women and men are better represented in this dimension.
+
+
++ We get the additional information of  older womens aged 75 years old or more and inversely correlated with men on the second axe.
+
+
+
+```{r, echo=FALSE}
+cir_bf13 <- fviz_pca_var(PCA_sd, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(1,3))
+cir_bf13
+
+```
+
+
+```{r, echo=FALSE}
+sca_13 <-fviz_pca_ind (PCA_sd, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE,
+             axes = c(1,3))
+sca_13
+
+
+```
+
+
+We can see the communes of code 191 (Évette-Salbert - FC), 27 (Varois-et-Chaignot - BG), 98 (	
+Marzy -BG) and 101 (Saint-Éloi -BG) having a relationship with people owning a home aged between 30 and 74 years old. 85 (Salins-les-Bains BG) and 88 (Château-Chinon (Ville) -FC). 52 (Montbéliard  - FC) and 63 (Seloncourt - FC) have people renting a home and unemployed correlated with those communes.
+
+
+
+### Dimension 2 and 3
+
+
+We see a more accurate representation of both women and men across a range of categories in this dimension, including those aged 15-29 and >75, as well as cadres, intermediate workers, those with diplomas, and manual workers. 
+
+
+
+```{r, echo=FALSE}
+cir_bf23 <- fviz_pca_var(PCA_sd, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(2,3))
+cir_bf23
+```
+
+
+```{r, echo=FALSE}
+sca_23 <-fviz_pca_ind (PCA_sd, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE,  
+             axes = c(2,3))
+sca_23
+```
+
+We can see 66 (Valdahon - FC), 118 (Saint-Sauveur - FC) and 161 (Varennes-le-Grand - BG) having more men in those communes. 9 (Fontaine-lès-Dijon - BG) and 20 (Saint-Apollinaire - BG) show more people that are employed as executives.
+
+
+## Clusters {.tabset}
+
+According to the gap statistics method, it is recommended that we choose two clusters for the combined dataset of the Bourgogne and Franche-Compte regions. In this case by the K-means method, the size of the clusters are 102 and 93. 
+
+
+```{r, echo=TRUE}
+kmeans_clusters1 <- kmeans(PCA_sd$ind$coord[,1:3], centers = 2)
+#kable(kmeans_clusters1$cluster, format = "markdown")
+cat("The size of the clusers 1 and 2 are", "\n", kmeans_clusters1$size)
+
+```
+
+
+### Cluster plot
+
+```{r, echo=FALSE}
+#plot of the cluster
+p1 <- fviz_cluster(kmeans_clusters1, data = PCA_sd$ind$coord[,1:3], 
+                  geom = "point", ellipse.type = "norm") +
+  geom_text_repel(aes(label = rownames(PCA_sd$ind$coord[,1:3])), 
+                  fontface = "bold", size = 3)
+p1
+```
+
+
+
+
+```{r, echo=FALSE, include=FALSE}
+# Perform clustering with 2 and 3 to see the differences
+set.seed(123)
+kmeans_clusters <- kmeans(PCA_sd$ind$coord[,1:3], centers = 2)
+
+cat("The size of the cluster are" ,"\n",kmeans_clusters$size)
+
+
+kmeans_clusters
+# Plot clusters with labels
+p <- fviz_cluster(kmeans_clusters, data = PCA_sd$ind$coord[,1:3], 
+                  geom = "point", ellipse.type = "norm") +
+  geom_text_repel(aes(label = rownames(PCA_sd$ind$coord[,1:3])), 
+                  fontface = "bold", size = 3)
+p
+```
+
+
+**3D Plot cluster by the K-means**
+
+```{r, echo=FALSE}
+## 3D plot 
+fig <- plot_ly(x = PCA_sd$ind$coord[,1], 
+                y = PCA_sd$ind$coord[,2], 
+                z = PCA_sd$ind$coord[,3], 
+                type = "scatter3d", mode = "markers", 
+                marker = list(color = kmeans_clusters$cluster, colorscale = "Viridis", size = 5),
+                text = paste("Cluster: ", kmeans_clusters$cluster, "<br>"))
+fig
+```
+
+
+
+### Dendogram 
+
+
+We use the hclust function with the ward.D2 method to generate the dendrogram, selecting 3 as the number of clusters.
+
+
+```{r, echo=FALSE}
+Multifac_dat <- PCA_sd$ind$coord[,1:3]
+
+# Create a data frame with the commune names
+communes <- data.frame(name = unique(bg_fc$commune))
+
+# Perform hierarchical clustering
+dist_matrix <- dist(scale(Multifac_dat))
+
+ 
+hc <- hclust(dist_matrix, method = "ward.D2")
+
+# Cut the dendrogram into 3 clusters
+cut_ward <- cutree(hc, k = 2)
+
+# Set the commune names as labels for the dendrogram nodes
+labels(hc) <- communes$name
+
+# Plot the dendrogram with cluster borders and commune names
+plot(hc, hang = -1, main = "Hierarchical Clustering of Communes")
+rect.hclust(hc, k = 2, border = 2:4)
+abline(h = 3, col = "red")
+```
+
+
+```{r, echo=FALSE}
+# Create a data frame with the commune names and cluster assignment
+commune_clusters <- data.frame(name = communes$name, cluster = cut_ward)
+
+# Sort the data frame by cluster assignment
+commune_clusters <- commune_clusters[order(commune_clusters$cluster),]
+
+# Access communes in cluster 1
+cluster1_communes <- commune_clusters$name[commune_clusters$cluster == 1]
+cat("\n","The communes of the First cluster are: ", "\n", cluster1_communes,"\n")
+
+#kable(cluster1_communes, format = "markdown")
+
+# Access communes in cluster 2
+cluster2_communes <- commune_clusters$name[commune_clusters$cluster == 2]
+#kable(cluster2_communes, format= "markdown")
+cat("\n","The communes of the Second cluster are: ", "\n", cluster2_communes,"\n")
+
+# Access communes in cluster 3
+#cluster3_communes <- commune_clusters$name[commune_clusters$cluster == 3]
+#kable(cluster3_communes, format = "markdown")
+#cat("\n","\n","The communes of the first cluster are: ", "\n", cluster3_communes,"\n")
+```
+
+
+### Map of the clusters
+
+
+```{r, echo=FALSE}
+# Add cluster column to Join_Data_Map data frame
+Join_Data_Map$cluster <- cut_ward
+
+# Plot map with cluster colors
+ggplot() +
+  geom_sf(data = departements_L93, colour = "#BFBFBF") +
+  geom_sf(data = Bourgogne, fill = "#3F3F88", colour = "grey60") +
+  geom_sf(data = Join_Data_Map, aes(fill = factor(cluster)), color = NA) +
+  scale_fill_manual(values = c("red", "blue", "green")) +
+  scale_color_manual(values = c("red", "blue", "green")) +
+  coord_sf(crs = 2154, datum = sf::st_crs(2154),
+           xlim = st_bbox(Bourgogne)[c(1,3)],
+           ylim = st_bbox(Bourgogne)[c(2,4)]
+  ) +
+  theme(title = element_text(size = 16),
+        panel.background = element_rect(fill = "#BFBFBF")) +
+  ggtitle("Communes population in both regions with Clustering")
+
+```
+
+
+
+**Cluster Analysis:**
+
+* We conducted a cluster analysis using both 2 and 3 clusters, as determined by the gap statistics which measures the mean of the communes within clusters. However, when we used 3 clusters, we found significant overlap between the clusters, which led us to ultimately choose to continue our analysis with 2 clusters.
+
+
+* Once we have applied two clustering techniques, k-means and dendrogram, we can compare the results of both methods to gain a better understanding of the data structure and identify any potential patterns or relationships between the variables.
+
+
+* Although the k-means clustering method resulted in many intersections, making it difficult to interpret, the dendrogram method provided a better separation of the communes, leading to a clearer splitting of the communes for further interpretation. Therefore, we may find that the dendrogram method is more useful for analyzing this particular dataset.
+
+
+* After obtaining the two clusters using the dendrogram method, we can add them to the map of the Bourgogne and Franche-Comte regions to visually compare the two clusters in terms of demographic variables. This could help us to identify any potential relationships between the clusters and demographic factors
+
+
+We will now perform a PCA for each region to compare how our findings of the analysis of both regions differs if they are analysed separately.
+
+
+# PCA of Bourgogne {.tabset}
+
+
+```{r, echo=FALSE}
+# Check if there are any NAs in the data
+PCA_bourg <- PCA(bourg_dat1, graph = FALSE)
+```
+
+
+```{r, echo=FALSE}
+## Standardized the data and then apply the PCA
+dat.pca <- as.data.frame(bourg_dat1)
+PCA_Resul_std <- scale(bourg_dat1)
+PCA_sd_bg <- PCA(PCA_Resul_std, graph = FALSE)
+```
+
+
+
+## PCA
+
+```{r,echo=TRUE}
+kable(PCA_sd_bg$eig[1:3,], digits = 3, format = "markdown")
+fviz_eig(PCA_sd_bg)
+```
+
+We will keep 3 axes also that explains ```72%``` of the variance for this region for our analysis. 
+
+
+
+We can see from the contribution plot that the locataire, proprio, people living in a house and appartment or hlm, unemployed has the most contribution to the data.
+
+
+## Dimensions
+
+
+```{r,echo=TRUE, include=FALSE}
+kable(PCA_bourg$var$cos2[,1:3], digits = 3, format = "markdown")
+
+kable(PCA_sd_bg$var$cor[,1:3], digits = 3, format = "markdown")
+```
+
+
+
+```{r,echo=TRUE}
+kable(PCA_sd_bg$var$coord[,1:3], digits = 3, format = "markdown")
+```
+
+
+**Component Summaries**
+
+**First Principal Component Analysis - Dim.1**
+
+We can see that variables that are better represented are 
+age_30_74_pct, chom, proprio, locataire, hlm, maison, appart
+ 
+**Second Principal Component Analysis - Dim.2**
+
+We can see here that the best represented variables are cadre, interm and manual workers (ouvr). 
+ 
+ 
+**Third  Principal Component Analysis - Dim.3**
+
+Women, Men and people aged 75 + are well represented. 
+
+
+
+## Contribution
+
+```{r,echo=TRUE}
+kable(PCA_sd_bg$var$contrib[,1:3], digits = 3, format = "markdown")
+fviz_pca_contrib(PCA_sd_bg, choice = "var", axes = 1)
+```
+
+## Quality of representation
+
+```{r, echo=FALSE}
+kable(PCA_sd_bg$var$cos2[,1:3], digits = 3, format = "markdown")
+```
+
+
+
+## Dimension 1 and 2
+
+```{r, echo=FALSE}
+cir_bg12 <- fviz_pca_var(PCA_sd_bg, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(1,2))
+cir_bg12
+```
+
+* We observe the following variables to interpret the first axe:
+
+
+
+ * Employment Status:
+   + Manual Workers (ouvr)
+   + unemployed (chom)
+  
+ * Population age group:
+   + 15-29 years old
+
+  * Housing Status of residents:
+    + Living in HLM
+    + Living in a appartment
+    + Renting (locataire)
+
+ * The level of Education:
+   + No Diploma (dipl_aucun)
+   
+  
+On the opposite direction:
+
+  * Housing Status of residents:
+    + Living in a house
+    + Owning a property. 
+  
+  * Population age group:
+    + 30-74 years old
+  
+  
+The second axe:     
+
+   
+ * Employment Status:
+   + Interm
+   + Managers (Cadres)
+  
+ * The level of Education:
+   + No Diploma
+   
+  
+**Intepretation of the first axe:**
+
++ We see people owning a house correlated with the age group 30-75. On the otherhand, it is inversely correlated of renting an appartment and belong to a younger age group 15-29.
+
++ People renting a hlm housing are correlated with being in unemployment and without at least a diploma.
+
++ People not having at least a diploma is correlated with being manual workers (ouvr).
+
++ We get the same observation when comparing both the regions at once.
+
+
+
+**Intepretation of the second axe:**
+
++ Younger people aged 15-29 are correlated of having a diploma and renting an appartment.
+
++ People who are executives (cadres) are correlated of having temporary jobs and inversely correlated of not having a diploma.
+
+
+
+```{r, echo=FALSE}
+sca_bg_12 <-fviz_pca_ind (PCA_sd_bg, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE, 
+             axes = c(1,2))
+sca_bg_12
+```
+We see a some communes that correlated with people of owning on the first axe and correlated with people in hlm housing and in unemployment. We also see a lot of communes having people doing manual jobs (ouvr) with no diploma. We can notice a very small amount of cadres like the commune 7 (Chevigny-Saint-Sauveur), 9 (Fontaine-lès-Dijon) and 20 (Saint-Apollinaire) having people with employment as executives and on interim jobs. 
+
+## Dimension 1 and 3
+
+```{r, echo=FALSE}
+cir_bg13 <- fviz_pca_var(PCA_sd_bg, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(1,3))
+cir_bg13
+
+```
+
+
+```{r, echo=FALSE}
+sca_bg13 <-fviz_pca_ind (PCA_sd_bg, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE,
+             axes = c(1,3))
+sca_bg13
+
+
+```
+
+
+**Intepretation of the first axe:**
+
++ We see a better representation of the people having executives of being males. We can see a concentration of communes like 4 (Brazey-en-Plaine), 36 (Garchizy) and 48 (	
+Blanzy) with closest correlations. We can see a less concentration of people living in communes that have manuals jobs with no diploma. We can see a lot of people living in communes like 90 (Avallon) and 105 (Sens) that is closely correlated of renting an appartment than living in hlm housings.
+
+
+
+## Dimension 2 and 3
+
+
+We see a more accurate representation cadres and manual workers inversely correlated.
+
+
+```{r, echo=FALSE}
+cir_bg23 <- fviz_pca_var(PCA_sd_bg, col.var = "cos2",
+                     gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                     repel = TRUE,
+                     axes = c(2,3))
+cir_bg23
+```
+
+
+```{r, echo=FALSE}
+
+scabg_23 <-fviz_pca_ind (PCA_sd_bg, col.ind = "cos2",
+             gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+             repel = FALSE,  # Évite le chevauchement de texte
+             axes = c(2,3))
+scabg_23
+
+
+```
+
+**Intepretation of the second axe:**
+
++ We see there is a lot communes having a lot of manual workers than executives working in bourgogne. We can also deduce of a closer correlation of more older people aged 75 + living in more communes.
+
+## Clusters
+
+```{r}
+#clusters
+set.seed(123)
+kmeans_clusters_bg <- kmeans(PCA_bourg$ind$coord[,1:3], centers = 3)
+
+# Plot clusters with labels
+p_bg <- fviz_cluster(kmeans_clusters_bg , data = PCA_bourg$ind$coord[,1:3], 
+                  geom = "point", ellipse.type = "norm") +
+  geom_text_repel(aes(label = rownames(PCA_bourg$ind$coord[,1:3])), 
+                  fontface = "bold", size = 3)
+
+p_bg
+
+```
+
+
+## Dendogram 
+
+```{r}
+# Filter bourg_dat to select only the communes in Bourgogne
+bourg_dat_bg <- bourg_dat[bourg_dat$region == "Bourgogne", ]
+
+# Print the selected communes
+#bourg_dat_bg
+
+Multifac_dat_bg <- PCA_bourg$ind$coord[,1:3]
+
+# Perform hierarchical clustering
+hc_bg <- hclust(dist(scale(Multifac_dat_bg)), method = "ward.D2")
+
+# Cut the dendrogram into 3 clusters
+cut_ward_bg <- cutree(hc_bg, k = 3)
+
+# Set the commune names as labels for the dendrogram nodes
+labels(hc_bg) <- bourg_dat_bg$commune
+
+# Plot the dendrogram with cluster borders and commune names
+plot(hc_bg, hang = -1, main = "Hierarchical Clustering of Communes (Bourgogne)")
+rect.hclust(hc_bg, k = 3, border = 2:4)
+abline(h = 3, col = "red")
+```
+
+
+
+
+```{r, echo=FALSE}
+# Create separate data frames for each cluster
+cluster1_bg <- bourg_dat_bg[cut_ward_bg == 1, ]
+#kable(cluster1_bg, format = "markdown" )
+cat("\n","The comunnes of the first cluster", "\n", cluster1_bg$commune,"\n")
+
+
+cluster2_bg <- bourg_dat_bg[cut_ward_bg == 2, ]
+#kable(cluster2_bg, format="markdown")
+cat("\n","The comunnes of the second cluster", "\n", cluster2_bg$commune,"\n")
+
+cluster3_bg <- bourg_dat_bg[cut_ward_bg == 3, ]
+#kable(cluster3_bg, format = "markdown") 
+cat("\n","The comunnes of the third cluster", "\n", cluster3_bg$commune,"\n")
+```
+
+
+# PCA of Franche-Comte Region {.tabset}
+
+
+
+The communes of the Franche-Comté region of France were organized in a hierarchical system until 2012. At the top of this system were the départements, or administrative divisions, of Doubs, Jura, Haute-Saône, and Territoire de Belfort. These départements were then divided into arrondissements, which were further divided into cantons. At the lowest level were the communes, which were the smallest administrative divisions in the region.
+
+The communes of Franche-Comté varied in size and population, ranging from small rural villages to larger urban centers. In 2012, there were a total of 1,178 communes in the region. But in this data set we study 86 commnunes.
+
+
+
+```{r, echo=FALSE, include=FALSE}
+PCA_fc.sd <- PCA(FC_dat1, graph = FALSE)
+
+```
+
+## PCA
+
+```{r,echo=TRUE}
+kable(PCA_sd$eig[1:3,], digits = 3, format = "markdown")
+fviz_eig(PCA_sd)
+```
+
+
+
+## Quality of representation
+
+
+```{r, echo=FALSE}
+kable(PCA_fc.sd$var$cos2[,1:3], digits = 3, format = "markdown")
+```
+
+
+The PCA reduced the dimension of the data set and we keep 3 axes which explains ```67%``` of the variance of the data. We will carry our analysis with 3 axes.
+
+
+## Dimensions
+
+
+```{r,echo=TRUE, include=FALSE}
+kable(PCA_fc.sd$var$cos2[,1:3], digits = 3, format = "markdown")
+
+kable(PCA_fc.sd$var$cor[,1:3], digits = 3, format = "markdown")
+```
+
+
+
+```{r,echo=TRUE}
+kable(PCA_fc.sd$var$coord[,1:3], digits = 3, format = "markdown")
+```
+
+
+
+
+**Component Summaries**
+  
+  
+  **First Principal Component Analysis - Dim.1**
+  
+The most well-represented groups consist of individuals who reside in a house, apartment, or HLM, as well as those who are unemployed or renting. Regarding the age gropup the 15-29 and 30-74 are the well represented represented. In terms of employment, the categories of managers (cadres), intermediate workers (interm), and manual workers (ouvr) are prevalent. Furthermore, individuals with no diploma qualifications make up a significant portion of the represented population. 
+
+
+**Second Principal Component Analysis - Dim.2**
+  
+In the second axis, we observe that both genders (male and female) are well represented. The age group over 75 years old is also represented significantly, followed by manual workers, managers, and temporary employed individuals (interm).
+
+
+
+**Third Principal Component Analysis - Dim.3**
+  
+People aged between 15-29 years and those over 75 years of age are well represented. People employed as executive (cadres), having temporary and manual jobs,  no diploma and having at least one diploma are also well represented.
+
+
+
+## Contribution
+
+```{r,echo=TRUE}
+kable(PCA_fc.sd$var$contrib[,1:3], digits = 3, format = "markdown")
+fviz_pca_contrib(PCA_fc.sd, choice = "var", axes = 1)
+```
+
+According to the contribution plot, the individuals who are tenants (locataire), property owners (propio), living in a house or apartment, living in subsidized housing (HLM), unemployed, no diploma and the age group 30-74 have made the greatest contribution to the data.
+
+
+
+## Dimension 1 and 2
+
+```{r, echo=FALSE}
+Cir_fc <- fviz_pca_var(PCA_fc.sd, col.var = "cos2",
+                       gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                       repel = TRUE,
+                       axes = c(1,2))
+
+Cir_fc
+```
+
+
+
+```{r, echo=FALSE}
+scatt_fc <-fviz_pca_ind(PCA_fc.sd , col.ind = "cos2",
+                        gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+                        repel = FALSE,  # Évite le chevauchement de texte
+                        axes = c(1,2))
+
+scatt_fc
+
+```
+
+**Intepretation of the first axe**
+  
++ We have almost the same interpretation as the region of Bourgogne but stronger correlation of renting an appartment
+and having no diploma and being unemployed.
+
+
++ We see a less number of men that are executives and have a more concentration of women having executive jobs in more communes.
+
++ The correlation of renting an appart and hlm housing are more closely correlated.
+
+**Intepretation of the second axe**
+  
++ We see a better correlation of more people aged 75+ and women living in different communes.
+
+
+
+## Dimension 1 and 3
+
+
+
+```{r, echo=FALSE}
+Cir_fc <- fviz_pca_var(PCA_fc.sd, col.var = "cos2",
+                       gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                       repel = TRUE,
+                       axes = c(1,3))
+
+Cir_fc
+```
+
+
+```{r, echo=FALSE}
+scatt_fc <-fviz_pca_ind(PCA_fc.sd , col.ind = "cos2",
+                        gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+                        repel = FALSE,  # Évite le chevauchement de texte
+                        axes = c(1,3))
+
+scatt_fc
+
+```
+
+
+People renting an appartment are the most represented in communes 24 (Montbéliard), 47 (Lons-le-Saunier), 51 (Morez), 74 (Vesoul). We see a good representation of people owning a home in 2(Avanne-Aveney), 22(Mathay), 25 (Montferrand-le-Château), 60 (Champagney) and 78 (Châtenois-les-Forges).
+
+
+## Dimension 2 and 3
+
+
+```{r, echo=FALSE}
+Cir_fc <- fviz_pca_var(PCA_fc.sd, col.var = "cos2",
+                       gradient.cols = c("#a1dab4", "#96d6a7", "#41b6c4", "#2c7fb8", "#253494"),
+                       repel = TRUE,
+                       axes = c(2,3))
+
+Cir_fc
+```
+
+
+```{r, echo=FALSE}
+scatt_fc <-fviz_pca_ind(PCA_fc.sd , col.ind = "cos2",
+                        gradient.cols = c( "#41b6c4", "#2c7fb8", "#253494"),
+                        repel = FALSE,  # Évite le chevauchement de texte
+                        axes = c(2,3))
+
+scatt_fc
+
+```
+
+We can see that there are more women aged 75+ from the communes 2(	
+Avanne-Aveney), 3 (Baume-les-Dames) and 25(Montferrand-le-Château) and women aged 75+ in 57 (Salins-les-Bains) and 63 (Gray).
+
+
+
+
+## Clusters
+
+```{r}
+#clusters
+
+set.seed(123)
+kmeans_clusters_FC <- kmeans(PCA_fc.sd$ind$coord[,1:3], centers = 2)
+
+# Plot clusters with labels
+p_FC <- fviz_cluster(kmeans_clusters_FC, data = PCA_fc.sd$ind$coord[,1:3], 
+                     geom = "point", ellipse.type = "norm") +
+  geom_text_repel(aes(label = rownames(PCA_fc.sd$ind$coord[,1:3])), 
+                  fontface = "bold", size = 3)
+
+p_FC
+
+```
+
+**The interpretation of the k-means method with 2 or 3 clusters is difficult because the ellipses all intersect each other, making it challenging to distinguish the clusters.**
+  
+
+## Dendogram 
+  
+  
+  However with the k-means we do not have a good spliting in the clusterting in the dendogram we have a better 
+representation. 
+
+
+
+```{r}
+# Filter FC_dat to select only the communes in Franche-Comté
+FC_dat_fc <- FC_dat[FC_dat$region == "Franche-Comte", ]
+
+Multifac_dat_fc <- PCA_fc.sd$ind$coord[,1:3]
+
+
+# Extract the first three principal components from PCA_fc.sd
+Multifac_dat_fc <- PCA_fc.sd$ind$coord[,1:3]
+
+hc_fc <- hclust(dist(scale(Multifac_dat_fc)), method = "ward.D2")
+
+
+cut_ward_fc <- cutree(hc_fc, k = 3)
+
+# Set the commune names as labels for the dendrogram nodes
+labels(hc_fc) <- FC_dat_fc$commune
+
+# Plot the dendrogram with cluster borders and commune names
+plot(hc_fc, hang = -1, main = "Hierarchical Clustering of Communes (Bourgogne)")
+rect.hclust(hc_fc, k = 3, border = 2:4)
+abline(h = 3, col = "red")
+
+```
+
+
+
+```{r, echo=FALSE}
+# Create separate data frames for each cluster
+cluster1_fc<- FC_dat_fc[cut_ward_fc == 1, ]
+#kable(cluster1_fc$commune, format = "markdown" )
+cat("\n","The comunnes of the first cluster", "\n", cluster1_fc$commune,"\n")
+
+#
+cluster2_fc <- FC_dat_fc[cut_ward_fc == 2, ]
+#kable(cluster2_fc$commune, format="markdown")
+cat("\n","The comunnes of the second cluster", "\n", cluster2_fc$commune,"\n")
+
+#
+cluster3_fc <- FC_dat_fc[cut_ward_fc == 3, ]
+#kable(cluster3_fc$commune, format = "markdown") 
+cat("\n","The comunnes of the third cluster", "\n", cluster3_fc$commune,"\n")
+```
+
+
+
+
+## Study some differences between the Clusters
+
+```{r}
+# Calculate means of variables for each cluster
+means_by_cluster <- aggregate(FC_dat_fc[, c("femmes", "pop_hommes_pct", "chom", "agric", "indep", "cadres")], 
+                              by = list(cluster = cut_ward_fc), 
+                              FUN = mean)
+
+means_by_cluster
+# Calculate medians of variables for each cluster
+medians_by_cluster <- aggregate(FC_dat_fc[, c("femmes", "pop_hommes_pct", "chom", "agric", "indep", "cadres")], 
+                                by = list(cluster = cut_ward_fc), 
+                                FUN = median)
+
+medians_by_cluster 
+```
+
+age_15_29,  age_30_74_pct, age_75p, femmes, pop_hommes_pct, chom, agric, indep, cadres, interm, ouvr, dipl_aucun ,has_dip, resid_sec, proprio, locataire, hlm , maison, appart
+
+
+
+```{r}
+# Create box plots of variables by cluster
+par(mfrow = c(1,3))
+boxplot(femmes ~ cluster, data = means_by_cluster, 
+        main = "Population Density by Cluster (Mean)")
+boxplot(pop_hommes_pct ~ cluster, data = means_by_cluster, 
+        main = "Median Income by Cluster (Mean)")
+boxplot(agric ~ cluster, data = means_by_cluster, 
+        main = "Internet Access by Cluster (Mean)")
+
+```
+
+
+
+## Study of the Clusters {.tabset}
+
+By comparing age, gender, occupation, education, and type of housing, we can analyze the cluster means to obtain a more comprehensive understanding of the three clusters obtained for the Franche Compte region.
+
+
+```{r, echo=FALSE}
+# Calculate means of variables for each cluster
+means_by_cluster <- aggregate(FC_dat_fc[, c("femmes", "pop_hommes_pct", "chom", "agric", "indep", "cadres", "age_15_29",  "age_30_74_pct", "age_75p", "interm", "ouvr", "dipl_aucun" ,"has_dip", "resid_sec", "proprio", "locataire", "hlm" , "maison", "appart")], 
+                              by = list(cluster = cut_ward_fc), 
+                              FUN = mean)
+
+kable(means_by_cluster, format = "markdown")
+# Calculate medians of variables for each cluster
+medians_by_cluster <- aggregate(FC_dat_fc[, c("femmes", "pop_hommes_pct", "chom", "agric", "indep", "cadres", "age_15_29",  "age_30_74_pct", "age_75p", "interm", "ouvr", "dipl_aucun" ,"has_dip", "resid_sec", "proprio", "locataire", "hlm" , "maison", "appart")], 
+                                by = list(cluster = cut_ward_fc), 
+                                FUN = median)
+
+kable(medians_by_cluster, format = "markdown")
+
+```
+
+
+
+
+### By Gender
+
+We can observe that there is a significant variation in the female population across the clusters, with the lowest number of women in the first cluster and the highest in the third cluster. In contrast, the male populations show the opposite pattern, with the highest number of men in the first cluster and the lowest in the third cluster.
+
+```{r, echo=FALSE}
+# Create box plots of variables by cluster
+par(mfrow = c(1,2))
+boxplot(femmes ~ cluster, data = means_by_cluster, 
+        main = "Population of Womens (Cluster)")
+boxplot(pop_hommes_pct ~ cluster, data = means_by_cluster, 
+        main = "Population of Men (Cluster)")
+
+
+
+```
+
+### By Age
+
+
+* It is noticeable that the first cluster is dominated by younger individuals (aged 15-29), while the age range of 30-74 and >75 follows in increasing order.
+
+* In contrast, the second cluster has the lowest number of young people and the highest number of individuals aged between 30-74.
+
+* The third cluster, on the other hand, has the highest concentration of young individuals (aged 15-29) as well as old individuals (>75).
+ 
+
+
+```{r, echo=FALSE}
+par(mfrow = c(1,3))
+boxplot(age_15_29 ~ cluster, data = means_by_cluster, 
+        main = "Population age 15-29 ")
+boxplot(age_30_74_pct~ cluster, data = means_by_cluster, 
+        main = "Population age 30-74")
+boxplot(age_75p ~ cluster, data = means_by_cluster, 
+        main = "Population age >75")
+```
+
+
+
+### By Education
+
+
+* Comparing the clusters, it is evident that the first cluster has a higher percentage of individuals with superior diplomas, whereas the second cluster has the lowest mean in both categories. In the third cluster, we can find the largest population of individuals without a superior diploma.
+
+
+
+```{r, echo=FALSE}
+par(mfrow = c(1,2))
+boxplot(dipl_aucun ~ cluster, data = means_by_cluster, 
+        main = "Population Having diploma ")
+boxplot(has_dip~ cluster, data = means_by_cluster, 
+        main = "Population No Having diploma")
+```
+
+
+
+
+### By Occupation
+
+* We can observe that the first cluster is predominantly composed of individuals working in agriculture and manual labor, while having the lowest proportion of managers and manual workers. This observation is consistent with the results of the PCA, which showed an inverse correlation between these two types of occupations.
+
+
+* Among the clusters, the second one stands out with the largest number of managers, while agriculture and manual workers make up the next two largest groups, respectively.
+
+* The third cluster has a notable population of managers, ranking just behind the second cluster, and is followed by manual workers and agriculture in that order.
+
+
+```{r, echo=FALSE}
+par(mfrow = c(1,4))
+boxplot(agric ~ cluster, data = means_by_cluster, 
+        main = "Pop.of Agriculture ")
+boxplot(cadres ~ cluster, data = means_by_cluster, 
+        main = "Pop.of Managers")
+boxplot(ouvr ~ cluster, data = means_by_cluster, 
+        main = "Pop. of Manual Workers")
+```
+
+
+
+### By housing 
+
+* In Cluster 1 we see the same proportion in each category. 
+
+* The PCA analysis supports the finding that cluster 2 has a greater proportion of homeowners and a smaller proportion of renters compared to the other clusters.
+
+
+* The majority of people in cluster 3 live in apartments, while the number of homeowners and renters is comparatively low.
+
+
+
+
+
+```{r, echo=FALSE}
+par(mfrow = c(1,4))
+boxplot(proprio ~ cluster, data = means_by_cluster, 
+        main = "Pop. Owners ")
+boxplot(locataire ~ cluster, data = means_by_cluster, 
+        main = "Pop. Rent ")
+boxplot(maison ~ cluster, data = means_by_cluster, 
+        main = "Liv. in a House")
+boxplot(appart ~ cluster, data = means_by_cluster, 
+        main = "Liv. in appa")
+```
+
+
+
+
+
+### Analysis
+
+
+
+* Cluster 1: 
+
+
+The first cluster is primarily made up of younger individuals, with ages ranging from 15 to 29 years old. The proportion of individuals in the age ranges of 30-74 and over 75 years old increases in ascending order. Additionally, the first cluster stands out with a higher number of individuals holding higher degrees compared to the other clusters. However, in terms of occupation, the first cluster is largely comprised of individuals working in agriculture and manual labor, indicating a potential disparity between education and employment opportunities in this group.
+
+* Cluster 2:
+
+The analysis reveals that the second cluster is distinct from the others in several ways. Firstly, it has a lower number of young people and a higher number of individuals aged between 30-74, indicating a potential difference in the distribution of age groups across the clusters. Additionally, the second cluster has a greater proportion of managers compared to the other clusters, followed by agriculture and manual workers. This suggests that the occupational composition of this group is markedly different from that of the other clusters. Moreover, the second cluster is characterized by a higher proportion of homeowners and a lower proportion of renters compared to the other clusters, highlighting potential differences in the housing arrangements of these groups
+
+
+* Cluster 3:
+
+The third cluster displays distinct demographic and occupational characteristics. It is distinguished by having the highest concentration of young and old individuals and a notable population of managers, with manual workers and agriculture following in that order. Additionally, the third cluster has the largest proportion of individuals without a higher degree. Housing-wise, the majority of people in this cluster live in apartments, with a comparatively lower number of homeowners and renters
+
+
+
+
+
+# Conclusion of Analysis
+
++ We deduced from our analysis a manual worker is closely correlated of not having a diploma.
+
++ People being unemployed is correlated of them living in hlm residences and inversely correlated with people having a job and owning a house.
+
++ People aged 30 to 74 years old are correlated of having a house and being the owner. Those who rent an appartment and inversely correlated of owning a house
+
++ Communes of Branges, Gergy from Bourgogne shows people aged  between 30 and 74 years old having a home.
+
++ The communes from Bourgogne have more people owning a home aged 30-74 years old. However, we see more communes from Franche comté renting a home and unemployed.
+
++ More people are employed as executives in the Bourgogne region.
++ A higher correlation of people renting and living in appartment and hlm housing in Franche comté.
+
++ Older womens aged 75+ lives in different communes in Franche comté than Bourgogne.
+
++ The type of occupation of a person is correlated to their level of education and the type of jobs. Individuals with no diploma is more closely correlated to professions requiring manual work. Similarly a person having at least a diploma is more correlated with an executive.
+
+
+Overall, we saw that the employment status is correlated in both region and the housing type residents rents or own and this is different per communes for both regions. We saw more women having executives jobs in Franche comté than men. Additionally, executives in both region are correlated to interim jobs in both regions.
+
+
+# Recommendations for further analysis
+
+A more in depth analysis of the communes of both region to investigate which type of communes exibit similar economics conditions. Eventually, more data will be needed. For example: Salary, Tax payments, financial background and field of work could be influencing factors.
+
+
+
+
