@@ -93,7 +93,6 @@ This project involved creating a console-based version of the popular Monopoly b
 *Figure 2: Player A is send to prison*
 
 
-
 ## Linear Models
 
 ### **Linear Models Project (TP1)**  
@@ -137,6 +136,8 @@ This project involved using multiple **linear regression models** to predict ozo
 - Bootstrap Methods for Confidence Intervals
 - R Programming (Libraries: `lm()`, `ellipse`, `bootstrap`)
 
+[View HTML Report](TP2/TP2NEW2.html)
+*View HTML TP2 report*
 
 ### **Linear Models Project (TP3)**  
 
@@ -148,6 +149,9 @@ This project focused on building and validating multiple **linear regression mod
 - Model Selection (AIC, BIC, Adjusted \( R^2 \))
 - Cross-Validation Techniques
 - R Programming (Libraries: `lm()`, `corrplot`, `leaps`)
+
+[View HTML Report](TP3/TP3HURTADOAndrea.html)
+*View HTML TP3 report*
 
 ## Data Analysis Lecture
 
@@ -196,6 +200,9 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 - **Clustering and Dendrogram Analysis** for identifying group patterns.
 - **R packages for mapping and visualization**:
   - `sf`, `tmap`, `leaflet`, `gridExtra`, `ggrepel`
+
+[View HTML Report](project/Projet_Ritish_Andrea.html)
+*View HTML Data Analisis project*
 
 ##### **Recommendations for Further Study**:
 A deeper analysis of communes in both regions, potentially including additional variables like salary, tax payments, and financial background to better understand economic conditions.
