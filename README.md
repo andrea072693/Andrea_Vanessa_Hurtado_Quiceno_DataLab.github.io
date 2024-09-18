@@ -17,6 +17,9 @@ Welcome to my GitHub portfolio! I am Andrea Vanessa Hurtado Quiceno, a PhD candi
 - **PhD in Functional Analysis and Stochastic Analysis**  
   RPTU Kaiserslautern (2023 – Present)  
 
+- **Master 1 in Modelisation Statistique**  
+  Université Franche-Comté, Besançon (2022 – 2023)
+  
 - **Master 2 in Mathematiques Fondamentales**  
   Université Sorbonne (Institut Pierre et Marie Curie), Paris (2020 – 2021)  
 
@@ -25,9 +28,6 @@ Welcome to my GitHub portfolio! I am Andrea Vanessa Hurtado Quiceno, a PhD candi
 
 - **Master 1 in Mathematical Physics**  
   Université de Bourgogne, Dijon (2018 – 2019)  
-
-- **Master 1 in Modelisation Statistique**  
-  Université Franche-Comté, Besançon (2022 – 2023)  
 
 - **BSc in Mathematics**  
   Universidad del Valle, Cali, Colombia (2009 – 2016)  
@@ -61,6 +61,8 @@ This project involved exploring **topological data analysis (TDA)** techniques a
 More detailed information and code for this project will be added soon!
 
 ## C++ Project
+*Master 1 in Modelisation Statistique master's project*  
+Université Franche-Comté, Besançon (2022 – 2023)
 
 ### **Monopoly Game (Console Game)**  
 
@@ -94,6 +96,8 @@ This project involved creating a console-based version of the popular Monopoly b
 
 
 ## Linear Models
+*Master 1 in Modelisation Statistique master's project*  
+Université Franche-Comté, Besançon (2022 – 2023)
 
 ### **Linear Models Project (TP1)**  
 *Master 1 in Modelisation Statistique master's project*  
@@ -156,6 +160,8 @@ This project focused on building and validating multiple **linear regression mod
 [View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
 
 ## Data Analysis Lecture
+*Master 1 in Modelisation Statistique master's project*  
+Université Franche-Comté, Besançon (2022 – 2023)
 
 ### Socioeconomic Differences Between Bourgogne and Franche-Comté Regions in 2012: A PCA Analysis
 
@@ -235,7 +241,9 @@ This project demonstrates the application of Singular Value Decomposition (SVD) 
 [View PDF Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/cdc421bf68f624c751fd21253e8f22164da6d0ca/SVD/SVD_Project__Ritish__Andrea.pdf)
 
 
-## Simulation in R 
+## Simulation in R
+*Master 1 in Modelisation Statistique master's project*  
+Université Franche-Comté, Besançon (2022 – 2023)
 
 This project simulates the random walk of a turtle on a 2D grid using Monte Carlo methods. The goal is to estimate the distribution of the number of revisits (\(N_n\)) to previously visited points for different step sizes \(n = 100\), \(n = 1000\), and \(n = 10000\).
 
@@ -273,9 +281,15 @@ For each value of \(n\), we calculate \(N_n\), the number of revisits, and use M
 
 
 ## Statistics Lecture
+*Master 1 in Modelisation Statistique master's project*  
+Université Franche-Comté, Besançon (2022 – 2023)
 
 This project analyzes simulated data using statistical methods. The goal is to explore various aspects of the data, perform hypothesis testing, and build regression models to understand the underlying relationships.
 
+### **Authors**:
+- A.V Hurtado Quiceno
+- Amine Otmane
+  
 #### **Key Aspects**:  
 - **Data Simulation**: Generated synthetic data to represent real-world scenarios.
 - **Hypothesis Testing**: Applied t-tests and chi-squared tests to validate hypotheses about the data.
@@ -293,3 +307,4 @@ This project analyzes simulated data using statistical methods. The goal is to e
 
 
 ## New projects, coming soon!!!
+Coursera courses
