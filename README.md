@@ -116,6 +116,9 @@ This project tackled **simple and multiple linear regression models** to predict
 - Custom Regression Functions
 - R Programming (Functions: `lm()`, `sweep()`, matrix operations)
 
+[View HTML Report](doc/TP1NEWToSubmit.html)
+*View HTML TP1 report*
+
 ### **Linear Models Project (TP2)**  
 
 This project involved using multiple **linear regression models** to predict ozone concentration based on meteorological data. The dataset included variables like temperature, cloud cover, wind speed, and ozone concentration from the previous day. The goal was to answer several key statistical questions, such as model adequacy, confidence interval estimation, and bias detection.
