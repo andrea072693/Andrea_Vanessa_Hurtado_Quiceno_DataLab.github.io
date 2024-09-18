@@ -292,4 +292,4 @@ This project analyzes simulated data using statistical methods. The goal is to e
 [View R code](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/5195913c2c25880daf861448d59a8d2539baf68c/statistics/project_statististics.Rmd)
 
 
-## New projects, coming soon!
+## New projects, coming soon!!!
