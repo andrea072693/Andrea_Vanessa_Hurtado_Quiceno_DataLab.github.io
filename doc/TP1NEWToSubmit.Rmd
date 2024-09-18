@@ -1,0 +1,1347 @@
+---
+title: "TP1 Modèles linéaires"
+author: "A.V Hurtado Quiceno"
+date: "1/9/2023"
+output:
+  html_document:
+      toc: TRUE
+  pdf_document: 
+      
+      toc: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls())
+library(FactoMineR)
+library(utils)
+library(stats)
+library(ggiraphExtra)
+library(measurements)
+library(dplyr)
+
+```
+
+
+
+# Part I Regression lineaire simple: donnes appartements:
+
+
+
+```{r, include=FALSE, echo=FALSE}
+#load data base. 
+prixsurface <- read.table("prixsurface.txt")
+#rename the columns of the table
+colnames(prixsurface) <- c("surface","prix")
+prixsurface
+```
+
+## Le modèle avec constante $\mathcal{M}_{1}$
+
+Nous allons prédire la variable prix en fonction de surface par un modèle linéaire simple:
+
+$$
+\left(\mathcal{M}_1\right): \quad prix_i=\beta_0+\beta_1 \text { surface }_i+\varepsilon_i, \quad i=1, \ldots, 24
+$$
+
+#### La droite de regression
+
+```{r, echo=FALSE}
+# This is the linear model of the model (M1):
+attach(prixsurface)
+plot(surface,prix)
+res <- lm(prix~surface)##intercept est ajouté par default
+#abline(res,col="red", lwd=3, lty=2)## la droite de regression
+abline(res,col="red")## la droite de regression
+```
+
+#### Résumé du modèle $\mathcal{M}_1$  
+
+```{r, echo=FALSE}
+summary(res)##résumé du modèle
+```
+
+ a.)
+
+ *  Donner les estimations des coefficients pource jeu de données, l’équation de la droite de regression, les valeurs ajustées, les résidus d’estimation.
+
+
+##### Le coefficients pource jeu de données sont: 
+
+$$
+\hat{\beta}_{0_{\mathcal{M}_{1}}}=30.0921
+$$
+
+$$
+\hat{\beta}_{1_{\mathcal{M}_{1}}}= 3.9844 
+$$
+
+```{r, echo=FALSE}
+res$coefficients
+```
+
+$\textbf{Interpretation:}$ Notice that we expected this coefficients since the coefficients for this model are given by the following formula:
+
+
+$$
+\hat{\beta_{0}}= \overline{y} - \overline{x}\hat{\beta_{1}}
+$$
+where
+
+$$
+\hat{\beta_{1}}= \frac{\sum_{i=1}^{n} (x_{i}- \overline{x})(x_{i} - \overline{y})   }{\sum_{i=1}^{n}(x_{i}- \overline{x})}
+$$
+Therefore;
+
+$$
+\hat{\beta_{1}}= 3,98\\
+\hat{\beta_{0}}= \overline{y} - \overline{x}\hat{\beta_{1}} = 309,33 - (3,98)(70,083)= 30,09.
+$$
+
+The values $\overline{y}$ and $\overline{x}$ are as follows:
+
+```{r, echo=FALSE}
+yy=mean(prixsurface$prix)
+yy
+xx=mean(prixsurface$surface)
+xx
+```
+
+
+ * Alors, la droite de régression est :
+
+$$
+\left(\mathcal{M}_1\right): \quad prix_i=30.0921 + 3.9844  \text { surface }_i+\varepsilon_i, \quad i=1, \ldots, 24
+$$
+
+##### Le valeurs ajustées pource jeu de données sont:
+```{r, echo=FALSE}
+res$fitted
+```
+
+
+##### Le residuals of the estimation pource jeu de données sont:
+```{r, echo=FALSE}
+res$residuals
+```
+
+
+ *  Calculer la moyenne des valeurs ajustées et des résidus d’estimation.
+
+  La moyenne des valeurs ajustées est:
+ 
+ $$
+\bar{\hat{y}}_{\mathcal{M}_{1}}=309.3333. 
+ $$
+ 
+```{r, echo=FALSE}
+#The average of the adjusted values: 
+mean(res$fitted)
+```
+
+  La moyenne des résidus d'estimation est:
+ 
+ $$ 
+ \bar{\hat{\epsilon}}_{\mathcal{M}_{1}}= -9.636389e-16 \approx 0. 
+ $$
+ 
+ 
+```{r, echo=FALSE}
+## The average of the residuals, epsilon:
+mean(res$residuals)
+```
+
+ *  Que remarquez-vous? Ces résultats etaient-ils prévisibles?
+ 
+   $\textbf{Interpretation:}$ 
+  
+   *  Dans ce modèle $(\mathcal{M}_{1})$ nous avons cette moyenne des résidus $\hat{\epsilon}_{\mathcal{M}_{1}}$ est 0, et ceci peut être confirmé ici.
+   
+   * Nous avons $\bar{\hat{y}}_{\mathcal{M}_{1}}=309.3333= \bar{y}_{\mathcal{M}_{1}}$. Ce résultat était également prévisible puisque $\hat{\epsilon}_{\mathcal{M}_{1}}=0$, nous avons que la moyenne des valeurs ajustées, coïncide avec la moyenne de la valeur à prévoir, i.e  
+
+   $$
+   \frac{1}{n}\sum_{1}^{n} \hat{y}_{i} = \frac{1}{n}\sum_{1}^{n} y_{i}.
+   $$
+ 
+ b.)
+ * Representer graphiquement les residus d'estimation en fonction es valeurs ajustes:
+ 
+#### Graphique des residues d'estimation en fonction des valeurs ajustées
+
+```{r, echo=FALSE}
+plot(res$fitted, res$residuals, ylab="Résidus d'estimations de M1", xlab="Valeurs ajustées de M1")
+```
+
+ * Est-ce que le modèle considéré semble adapté à ce jeu de données? Combient vaut-il le $R^{2}$?
+
+$\textbf{Interpretation:}$
+
+Dans ce cas puisque notre modèle considère la variable constante 1, nous pouvons interpréter $R^2$. Le modèle semble adapté à ce jeu de données. Nous avons que la valeur $R_{\mathcal{M}_{1}}^2=0.9474$, cela révèle que $94,74%$ de la variabilité observée dans notre variable s’explique par cette régression linéaire simple.  
+
+
+  $\textbf{Observation:}$ En général, un R-squared plus élevé indique une plus grande variabilité est expliquée par le modèle.
+
+
+## Le modèle sans constante $\mathcal{M}_{2}$
+
+On considère maintenant le modèle sans constante:
+
+$$
+\left(\mathcal{M}_2\right): \quad prix_i=\beta_1 \text { surface }_i+\varepsilon_i, \quad i=1, \ldots, 24 .
+$$
+
+#### Résumé du modèle $\mathcal{M}_2$:
+
+```{r, echo=FALSE}
+res2 <- lm(prix~surface-1)###le modèle sans intercept
+#res2
+summary(res2)##résumé du modèle
+
+```
+
+#### Graphique des residues d'estimation en fonction des valeurs ajustées
+
+```{r, echo=FALSE}
+plot(res2$fitted, res2$residuals, ylab="Résidus d'estimations de M2", xlab="Valeurs ajustées de M2")
+```
+
+
+
+##### The coefficient:
+
+```{r, echo=FALSE}
+res2$coefficients
+```
+
+
+ * Alors, La droite de regression dans le modele $\mathcal{M}_{2})$ est:
+ 
+ 
+$$
+\left(\mathcal{M}_2\right): \quad prix_i= 4.2897 \,\, surface_i+\varepsilon_i, \quad i=1, \ldots, 24 .
+$$
+
+ a.)
+
+
+ *  Que pouvez-vous dire des estimations des coefficients de regression des modèles $\left(\mathcal{M}_1\right)$ et $\left(\mathcal{M}_2\right)$ ?
+ 
+ 
+Dans le modele $(M_{1})$ (avec constant) et $\mathcal{M}_2$ (sans constant) nous avons obtenu que les coefficients sont:
+
+$$
+\hat{\beta}_{0_{\mathcal{M}_1}}=30.0921, \hat{\beta}_{1_{\mathcal{M}_1}}= 3.9844,\\
+\hat{\beta}_{1_{\mathcal{M}_2}}= 4.2897.
+$$
+
+
+$\textbf{Interpretation:}$ 
+
+Par conséquent, nous pouvons observer que le coefficient $\hat{\beta}_{1_{\mathcal{M}_2}}$ du modèle $(\mathcal{M}_2)$ augmente par rapport au coefficient $\hat{\beta}_{1_{\mathcal{M}_1}}$, cela signifie que le coefficient du modèle sans avoir à tenir compte de la constante augmente (see Brooks, Econometrics).
+
+ * Quel est l'effet d'avoir enlevé la constante du modèle sur les estimations de coefficients de regression?
+
+I cannot say this (BECAREFUL). Le $R_{\mathcal{M}_{2}}^2=0.9843$. Cela montre que le coefficient $\beta_1$ explique $98\%$ du modèle et consistent avec les nuages de points aléatoires, contrary of what happens in the linear regression with a constant, where just $R_{\mathcal{M}_{1}}^2=0.9474$. 
+ 
+
+ b.)
+
+ * Calculez la moyenne des valeurs ajustées et la moyenne des résidus d'estimation.
+
+
+La moyenne des résidus et des valuers ajustéss est:
+
+$$
+\bar{\hat{\epsilon}}_{\mathcal{M}_{2}}=  8.69935
+$$
+
+##### La moyenne des residus
+```{r, include=FALSE, echo=FALSE}
+res2$residuals
+```
+
+```{r, echo=FALSE}
+## The average of the residuals, epsilon:
+mean(res2$residuals)
+```
+
+
+$$
+\bar{\hat{y}}_{\mathcal{M}_{2}}= 300.634
+$$
+
+##### La moyenne de valeurs ajustées
+```{r, include=FALSE, echo=FALSE}
+res2$fitted
+```
+
+```{r, echo=FALSE}
+mean(res2$fitted)
+```
+
+ *  Que remarquez-vous et comment expliquez vous ce résultat?
+ 
+ $\textbf{Interpretation:}$ La moyenne ajustées a diminué et la moyenne des résidus d'estimation a augmenté. Dans ce modèle nous ne considérons pas la constante, cela signifie que le vecteur des résidus d’estimation n’est plus orthogonal au vecteur des valeurs ajustees, cela implique que la moyenne des résidus n’est pas nulle comme on peut le voir, (i.e $\bar{\hat{\epsilon}}_{\mathcal{M}_{2}} \neq 0$).
+
+## Le modèle avec constante $\tilde{\mathcal{M}}_ {1}$ (avec la variable surface centre)
+
+On veut prédire maintenant la variable prix en utilisant la variable surface d'abord centrée, ensuite réduite, plus la constante:
+
+$$
+\left(\tilde{\mathcal{M}}_1\right): \quad prix_i=\tilde{\beta}_0+\tilde{\beta}_1 surface_i+\varepsilon_i = X \tilde{\beta} + \epsilon, \quad i=1, \ldots, 24,
+$$
+
+
+où surface est la variable centrée de surface.
+
+
+ a.)
+
+ *  Centrer d'abord la variable surface pour obtenir surface. 
+ 
+```{r, include=FALSE, echo=FALSE}
+prixsurface <- read.table("prixsurface.txt")
+colnames(prixsurface) <- c("surface","prix")
+prixsurface
+```
+
+```{r, include=FALSE,echo=FALSE}
+y=mean(prixsurface$surface)
+y
+x=mean(prixsurface$prix)
+x
+```
+
+#### Data initial avec la variable surface centrée
+```{r, echo=FALSE}
+surfacentre <- sweep(prixsurface, 2, c(y,0))
+surfacentre
+
+colnames(surfacentre) <- c("surfacentre","prix")
+
+```
+
+
+ * Réalisez le modèle $\left(\tilde{\mathcal{M}}_1\right)$
+
+
+#### La droite de regresion
+
+```{r, echo=FALSE}
+plot(surfacentre$surfacentre,prixsurface$prix)
+res3 <- lm(prixsurface$prix~surfacentre$surfacentre)##intercept est ajouté par default
+abline(res3, col="red" )## la droite de regression
+
+```
+
+#### Résumé du modèle $\tilde{\mathcal{M}}_ {1}$
+
+```{r, echo=FALSE}
+summary(res3)##résumé du modèle
+```
+
+
+ b.)
+
+ * Quelles sont les estimations des coefficients de regression dans le modèle $\left(\tilde{\mathcal{M}}_1\right)$ ? 
+
+Les estimaterus obtenu dan cet modeles sont:
+
+
+$$
+\hat{\beta}_{0_{\tilde{\mathcal{M}}_1}}=309.3333, \hat{\beta}_{1_{\tilde{\mathcal{M}}_1}}=3.9844, 
+$$
+
+
+ * Comparez-les avec les estimations obtenues avec le modèle $\left(\mathcal{M}_1\right)$ et commentez le résultat.
+
+
+Rappelez-vous que les coefficients du modèle $(\mathcal{M}_{1})$ sont:
+
+$$
+\hat{\beta}_{0_{\mathcal{M}_1}}=30.0921, \hat{\beta}_{1_{\mathcal{M}_1}}= 3.9844
+$$
+
+<!--  We can observe that the value of the slope coincide
+ $\hat{\beta}_{1_{\mathcal{M}_1}}=\hat{\beta}_{1_{\tilde{\mathcal{M}}_1}}=3.9844$, while the value of the $\beta_{0}$ are completely different. We need to remark here that the intercept coefficient is equal to the mean of the fitted value of $y$ in the model $\mathcal{M}_{1}$, i.e    --> 
+ 
+ 
+
+ $\textbf{Interpretation:}$ On peut voir que la valeur de la pente dans les deux modèles coïncide $\hat{\beta}_{1_{\mathcal{M}_1}}=\hat{\beta}_{1_{\tilde{\mathcal{M}}_1}}=3.9844$, alors que la valeur du $\beta_{0}$ sont complètement différents. Nous devons remarquer ici que le coefficient d’interception est égal à la moyenne de la valeur ajustée de $y$ dans le modèle $\mathcal{M}_{1}$, i.e
+ 
+ 
+ $$
+ \hat{\beta}_{0_{\tilde{\mathcal{M}}_1}}=309.3333 = \overline{\hat{y}}_{\mathcal{M}_{1}}.
+ $$
+ 
+ 
+ *  Pourriez-vous donner un résultat théorique qui relie l'expression du vecteur des estimateurs de moindres carrés $\left(\hat{\beta}_0, \hat{\beta}_1\right)^{\top}$ du modèle $\left(\mathcal{M}_1\right)$ aux $\left(\widehat{\tilde{\beta}}_0, \widehat{\tilde{\beta}}_1\right)^{\top}$ du modèle $\left(\tilde{\mathcal{M}}_1\right)$? 
+
+
+$\textbf{Proof:}$ On sait que $\hat{\beta}=(X^{\intercal}X)^{-1}X^{\intercal}y$ par la metode the moindres carres. 
+
+$$
+Y_i=\beta_1+\beta_2 X_i+\varepsilon_i,
+$$
+et nous définissons $\bar{X}$ comme la moyenne du régresseur: $\overline{X}=X_1+ \cdots+ X_n$ et nous pouvons réécrire le modèle comme
+$$
+Y_i=\beta_1+\beta_2 \bar{X}+\beta_2\left(X_i-\bar{X}\right)+\varepsilon_i \\
+=\widetilde{\beta}_1+\beta_2 \widetilde{X}_i+\varepsilon_i,
+$$
+
+où $\widetilde{\beta}_1:=\beta_1+\beta_2 \bar{X}$ et $\widetilde{X}_i:=X_i-\bar{X}$. $\widetilde{X}$ est une variable centrée. Ce faisant, nous avons rendu le modèle orthogonal. Cela simplifie considérablement le calcul, à la fin on peut revenir au paramétrage d’origine. Sous forme de matrice, nous avons et oublier le tilde pour la facilité de notation
+
+$$
+\left(\begin{array}{c}
+Y_1 \\
+\vdots \\
+Y_n
+\end{array}\right)=\left(\begin{array}{cc}
+1 & X_1 \\
+\vdots & \vdots \\
+1 & X_n
+\end{array}\right)\left(\begin{array}{c}
+\beta_1 \\
+\beta_2
+\end{array}\right)+\left(\begin{array}{c}
+\varepsilon_1 \\
+\vdots \\
+\varepsilon_n
+\end{array}\right) .
+$$
+Soit
+
+$$
+X=\left(\begin{array}{cc}
+1 & X_1 \\
+\vdots & \vdots \\
+1 & X_n
+\end{array}\right)
+$$
+Et, bien sûr,
+
+$$
+\beta=\left(\begin{array}{l}
+\beta_1 \\
+\beta_2
+\end{array}\right),
+$$
+
+nous pouvons utiliser
+
+$$
+X^{\prime} X=\left(\begin{array}{cc}
+n & \sum X_i \\
+\sum X_i & \sum\left(X_i\right)^2
+\end{array}\right)=\left(\begin{array}{cc}
+n & 0 \\
+0 & \sum\left(X_i\right)^2
+\end{array}\right) \text { yielding }\left(X^{\prime} X\right)^{-1}=\left(\begin{array}{cc}
+n^{-1} & 0 \\
+0 & \left(\sum\left(X_i \right)^2\right)^{-1}
+\end{array}\right)
+$$
+
+De plus,
+
+$$
+X^{\prime} Y=\left(\begin{array}{ccc}
+1 & \ldots & 1 \\
+X_1 & \ldots & X_n
+\end{array}\right)\left(\begin{array}{c}
+Y_1 \\
+\vdots \\
+Y_n
+\end{array}\right)=\left(\begin{array}{c}
+\sum Y_i \\
+\sum Y_i X_i
+\end{array}\right)
+$$
+
+
+par conséquent
+
+$$
+\widehat{\beta}=\left(\begin{array}{c}
+\widehat{\beta_0} \\
+\widehat{\beta_1}
+\end{array}\right)=\left(\begin{array}{cc}
+n^{-1} & 0 \\
+0 & \left(\sum\left(X_i\right)^2\right)^{-1}
+\end{array}\right)\left(\begin{array}{c}
+\sum Y_i \\
+\sum Y_i X_i
+\end{array}\right)=\left(\begin{array}{c}
+n^{-1} \sum Y_i \\
+\left(\sum Y_i X_i\right)\left(\sum\left(X_i\right)^2\right)^{-1}
+\end{array}\right) .
+$$
+
+Maintenant nous réintroduisons les tildes avec cette notation que nous avons
+
+$$
+\begin{aligned}
+& \widehat{\widetilde{\beta}}_0=\overline{Y} \\
+& \widehat{\beta}_1=\widehat{\widetilde{\beta}}_1=\frac{\sum_{i=1}^n Y_i\left(X_i-\overline{X}\right)}{\left.\sum_{i=1}^n\left(X_{i} - \overline{X} \right.\right)^2}=\frac{\sum_{i=1}^n\left(Y_i-\overline{Y}\right)\left(X_i-\overline{X}\right)}{\sum_{i=1}^n\left(X_i-\overline{X}\right)^2} \\
+& \widehat{\beta}_0=\widehat{\widetilde{\beta}}_0-\widehat{\beta}_1 \overline{X} .
+\end{aligned}
+$$
+
+ c.) 
+ * Quelles sont les valeurs ajustées avec le modèle $\left(\tilde{\mathcal{M}}_1\right)$ ? 
+
+##### Le   (fitted values) fitted values 
+
+```{r, echo=FALSE}
+res3$fitted
+```
+
+```{r, echo=FALSE}
+mean(res3$fitted)
+```
+
+##### Le residuals of the estimation
+
+```{r, echo=FALSE}
+res3$residuals
+```
+
+```{r, echo=FALSE}
+mean(res3$residuals)
+```
+
+ * Comparez-les avec celles obtenues avec le modèle $\left(\mathcal{M}_1\right)$ et commentez le résultat.
+
+
+La moyenne des résidus d'estimation est:
+
+$$
+\bar{\hat{\epsilon}}_{\tilde{\mathcal{M}}_1}=   3.885781e-15 \approx 0
+$$ 
+
+La moyenne des valuers ajustéss est:
+
+
+$$
+\bar{\hat{y}}_{\tilde{\mathcal{M}}_1}= 309.3333
+$$
+
+ * $\textbf{Interpretation:}$ On obtient le meme moyonne des résidus et des valeurs ajustées que dans le modele $\mathcal{M}_{1}$. Puisque dans ce modèle nous considérons la constante, nous avons ici que $\hat{\epsilon}=0$. Par conséquent, nous avons que la moyenne des valeurs ajustées est la même que la moyenne de la variable $y$. 
+
+
+## Le modele sans constante $\tilde{\mathcal{M}}_{2}$
+
+ On considère un modèle avec la variable surface centrée et sans constante:
+ 
+$$
+(\tilde{\mathcal{M}}_{2}): \operatorname{prix}_i=\tilde{\beta}_{1} \widetilde{surface}_i+\eta_i, \quad i=1, \ldots, 24,
+$$
+```{r, include=FALSE, echo=FALSE}
+plot(surfacentre$surfacentre,prixsurface$prix)
+res4 <- lm(prixsurface$prix~surfacentre$surfacentre-1)##intercept est ajouté par default
+abline(res4, col="red" )## la droite de regression
+```
+
+#### Résumé du modèle $\tilde{\mathcal{M}}_{2}$
+
+```{r, echo=FALSE}
+summary(res4)##résumé du modèle
+```
+
+#### Graphique des residues d'estimation en fonction des valeurs ajustées
+```{r, echo=FALSE}
+plot(res4$fitted, res4$residuals, ylab="Résidus d'estimations de M2", xlab="Valeurs ajustées de M2")
+```
+
+##### The coefficients:
+```{r, echo=FALSE}
+res4$coefficients
+```
+
+
+```{r, include=FALSE, echo=FALSE}
+res4$residuals
+```
+
+```{r, echo=FALSE}
+## The average of the residuals, epsilon:
+mean(res4$residuals)
+```
+
+
+```{r, include=FALSE, echo=FALSE}
+res4$fitted
+```
+
+```{r, echo=FALSE}
+mean(res4$fitted)
+```
+
+<!--La moyenne des valuers ajustéss  et des residues sont:
+
+
+$$
+\bar{\hat{y}}_{\tilde{\mathcal{M}}_{2}}=  309.3333\\
+\bar{\hat{\epsilon}}_{\tilde{\mathcal{M}}_{2}}=  2.4869e-14 \approx 0.
+$$-->
+
+ * Quel est l'estimation de $\tilde{\beta}_1$ dans ce modèle? Comparez-la avec celle obtenue dans le modèle $\left(\tilde{\mathcal{M}}_1\right)$.
+
+$$
+\hat{\beta}_{1}= 3.9844
+$$
+
+$\textbf{Interpretation:}$ On peut observer que la valeur de la pente coïncide dans les deux modèles $\hat{\beta}_{1_{\tilde{\mathcal{M}}_1}}= 3.9844= \hat{\beta}_{1}$. Contrairement à ce qui s’est passé dans le modèle $(\mathcal{M}_{1})$ et $(\mathcal{M}_{2})$ où la pente change, ici elle atteint la même chose, même si nous n’avons pas la constante. 
+
+
+## Le modèle avec constant $\tilde{\mathcal{M}}^{*}_{1}$ (avec la variable surface reduite)
+
+ * On réduit maintenant la variable surface et on considère le modèle:
+ 
+$$
+\left(\mathcal{M}_{1}^{*}\right): \quad \operatorname{prix}_i=\beta_0^*+\beta_1^* \text { surface }_i^*+\varepsilon_i, \quad i=1, \ldots, 24,
+$$
+
+où surface* est la variable réduite. 
+
+```{r, include=FALSE, echo=FALSE}
+prixsurface <- read.table("prixsurface.txt")
+colnames(prixsurface) <- c("surface","prix")
+prixsurface
+
+```
+
+
+#### La variable surface reduite
+
+```{r, echo=FALSE}
+surfacereduite1 <- sweep(prixsurface, 2, c(mean(prixsurface$surface), 0) )
+surfacereduite <- sweep(surfacereduite1, 2, c(sd(prixsurface$surface), 1),"/" )
+
+
+colnames(surfacereduite) <- c("surfacereduite","prix")
+surfacereduite
+```
+
+#### Graphique de la droite de regression
+
+```{r, echo=FALSE}
+plot(surfacereduite$surfacereduite,prixsurface$prix)
+res5 <- lm(prixsurface$prix~surfacereduite$surfacereduite)##intercept est ajouté par default
+#abline(res4)## la droite de regression
+abline(res5,col="red")## la droite de regression
+#summary(res4)##résumé du modèle
+```
+
+
+#### Résumé du Modéle $\mathcal{M}_{1}^{*}$
+
+```{r, echo=FALSE}
+summary(res5)##résumé du modèle
+```
+
+
+
+ * Répondrez aux mêmes questions ci-dessus:
+
+#### Le coefficients 
+
+```{r, echo=FALSE}
+res5$coefficients
+```
+
+#### Le fitted values
+
+```{r, echo=FALSE}
+res5$fitted
+mean(res5$fitted)
+```
+
+#### Le residuals
+
+```{r, echo=FALSE}
+res5$residuals
+mean(res5$residuals)
+```
+
+ * On a que les coefficients dans cet modele sont:
+ 
+ $$
+ \widehat{\beta}_{0}^{*}=309.3333                 
+$$
+$$
+\widehat{\beta}_{1}^{*}= 181.8993
+$$
+ 
+$\textbf{Interpretation}$ On peut observer que 
+
+
+ $$
+ \widehat{\beta}_{0}^{*}=309.3333 =  \overline{\hat{y}}_{\mathcal{M}_{1}^{*}},                 
+$$ 
+
+ 
+ * La moyenne de valeurs ajustées et la moyenne de résidus d'estimation sont:
+ 
+ $$
+ \overline{\hat{y}}_{\mathcal{M}_{1}^{*}}= 309.3333
+ $$
+ 
+ $$
+  \overline{\hat{\epsilon}}_{\mathcal{M}_{1}^{*}}=2.975051e-16 \approx 0
+ $$
+ 
+ 
+ $\textbf{Interpretation}$ Comme nous nous y attendions puisque ce modèle prend en considération de constant, nous avons que la moyenne des erreurs est zéro. Ensuite, nous avons que  $\overline{\hat{y}}_{\mathcal{M}_{1}^{*}}$ coincides with the value of $\overline{\hat{y}}_{\mathcal{M}_{1}}$. 
+ 
+ 
+ * Pourriez-vous donner un résultat théorique qui relie l'expression du vecteur des estimateurs de moindres carrés $\left(\widehat{\beta}_0^{*}, \widehat{\beta}_{1}^{*}\right)^{\top} \mathrm{du}$ modèle $\left(\mathcal{M}_{1}^{*}\right)$ en fonction des estimateurs de moindres carrés $\left(\widehat{\tilde{\beta}}_0, \widehat{\tilde{\beta}}_1\right)^{\top}$ du modèle $\left(\tilde{\mathcal{M}}_1\right)$ ?
+
+
+$\textbf{Proof}$
+
+
+On a que 
+
+$$
+ \widehat{\beta}_{0}^{*} = \overline{y} -  \widehat{\beta}_{1}^{*}  \overline{x^{*}}= \overline{y} - \widehat{\beta}_{1}^{*} \frac{1}{\sigma} \overline{x} =  \overline{y}, 
+$$
+
+alors
+
+$$
+\begin{aligned}
+& \widehat{\beta}_{0}^{*}=\overline{Y} \\
+& \widehat{\beta}_{1}^{*}=\frac{\sum_{i=1}^n\left(Y_{i}-\overline{Y}\right)\left(X_{i}^{*}-\overline{X}^{*}\right)}{\sum_{i=1}^n\left(X_{i}^{*}-\overline{X}^{*}\right)^2}=\frac{\sum_{i=1}^{n} Y_{i}\left(\frac{X_i}{\sigma}\right)}{\frac{1}{\sigma^{2}}\sum_{i=1}^{n}\left(X_{i} \right)^2}= \sigma \hat{\tilde{\beta}}_{1}  \\
+& \widehat{\beta}_{0}^{*}=\overline{y} -\widehat{\beta}_{1}^{*} \overline{X^{*}}= \overline{y} - \sigma \hat{\tilde{\beta}}_{1} \frac{1}{\sigma} \overline{\tilde{X}}=   \overline{y} 
+\end{aligned}
+$$
+
+lorsque l’écart-type de la surface variable est égal à:
+
+```{r, echo=FALSE}
+sd= sd(prixsurface$surface)
+sd
+```
+
+$$
+\sigma= 45.65267. 
+$$
+
+Donc on a :
+
+$$
+\widehat{\beta}_{1}^{*} = (45,652) (3,9844) = 181.8993 = \sigma \hat{\tilde{\beta}}_{1}, \\
+ \widehat{\beta}_{0}^{*} = 309.3333 =  \widehat{\tilde{\beta} }_{0}.
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Part II. Regresion linéaire multiple: données graisse
+
+Considérez les données graisse et on veut prédire le taux de graisse en fonction des autres variables.
+
+
+```{r, include=FALSE, echo=FALSE}
+#load data base. 
+graissed <- read.table("graisse2.txt", header = TRUE)
+#rename the columns of the table
+colnames(graissed) <-c("graisse","age","poids", "taille", "adipos","cou","buste","abdom","hanche","cuisse","genou","cheville","biceps","avantb","poignet")
+graissed
+```
+
+## Le modèle multi lineaire avec constante $\mathcal{M}_{1}$ (poids (lb) et taille (pouces))
+
+#### Résumé du modèle $\mathcal{M}_{1}$
+
+```{r,  echo=FALSE}
+# This is the linear model of the model (M1):
+#attach(graissed)
+res6 <- lm(graisse ~ age+ poids + taille + adipos + cou + buste + abdom+ hanche + cuisse + genou + cheville + biceps + avantb + poignet, data = graissed)
+summary(res6)
+#ggPredict(res6,se=TRUE,interactive=TRUE)
+```
+
+#### Coefficient for this model:
+
+```{r,echo=FALSE}
+res6$coefficients
+```
+#### Residuals for this model:
+
+```{r, include=FALSE}
+res6$residuals
+```
+
+```{r,echo=FALSE}
+mean(res6$residuals)
+```
+
+
+
+```{r include=FALSE}
+res6$fitted.values
+
+```
+
+#### The mean of the fitted values. 
+```{r, echo=FALSE}
+mean(res6$fitted.values)
+```
+
+* Posez le modèle et donnez les estimations des coefficients de régression, le $R_{2}$ , représentez les résidus.
+
+
+On a le modele suivante:
+
+
+$$
+(\mathcal{M}_{1}): \quad graisse_{i} = \beta_{0} +\beta_{1} \,\, age_{i} + \beta_{2} \,\, poids_{i} + \beta_{3} \,\, taille_{i} + \sum_{i=4}^{14} \beta_{i} \,\, x_{i} + \epsilon_{i}. 
+$$
+
+ - Après avoir fait la régression multi-linéaire nous avons cela:
+
+
+$$
+\hat{\epsilon}_{\mathcal{M}_{1}} =  -2.322283e-16 \approx 0. 
+$$
+
+cette valeur est attendue, puisque dans ce modèle nous considérons la constante.
+
+
+ - La moyenne des valeurs ajustées est donnée par:
+
+$$
+\overline{\hat{y}}_{\mathcal{M}_{1}}=  18.88765
+$$
+
+ - La valeur R-squared est:
+ 
+$$
+R^{2}_{\mathcal{M}_{1}}=0.7475. 
+$$
+
+Certains des coefficients les plus importants que je vais mentionner nous permettront de comparer avec les modèles suivants, puisque dans le modèle suivant, la taille et le poids variables changeront l’échelle, alors que l’âge variable ne changera pas:
+
+$$ 
+\hat{\beta}_{0_{\mathcal{M}_{1}}}= -49.74275 \\
+\hat{\beta}_{1_{\mathcal{M}_{1}}}=  0.05871 \\
+\hat{\beta}_{2_{\mathcal{M}_{1}}}= -0.17327  \\
+\hat{\beta}_{3_{\mathcal{M}_{1}}}=  0.47077     
+$$
+ 
+ 
+```{r,  echo=FALSE}
+# This is the linear model of the model (M1):
+#attach(graissed)
+res10 <- lm(graisse ~ age+ poids + taille + adipos + cou + buste + abdom+ hanche + cuisse + genou + cheville + biceps + avantb + poignet, data = graissed)
+#ggPredict(res6,se=TRUE,interactive=TRUE)
+``` 
+ 
+ 
+```{r, include=FALSE,echo=FALSE}
+summary(res10)
+```
+
+
+
+
+
+
+
+
+## Le modèle avec constante $\mathcal{M}_{2}$ ( poids(kg) et taille(cm))
+ 
+ * On souhaite transformer la variable poids (en livres) en kg et la taille (en pouces) en cm. Réalisez ces
+changements et posez le modèle avec ces nouvelles variables.
+
+```{r, include=FALSE, echo=FALSE}
+#Mur <- lm(graisse~. , data = graissedata)
+#summary(Mur)
+#plot(Mur$fitted, Mur$residuals, xlab="Résidus d'estimations",ylab="Valeurs ajustées")
+
+poidkg  <- 0.454
+poidkg 
+#graissechange1 <- sweep(graissed, 2 , c(1, 1, poidkg , 1 ,1,1,1,1,1,1,1,1,1,1,1), "*" )
+#graissed
+#graissechange1
+cm <- 2.54
+cm
+
+graissechange2 <- sweep(graissed, 2 , c(1, 1, poidkg , cm ,1,1,1,1,1,1,1,1,1,1,1), "*" )
+graissed
+graissechange2
+```
+
+
+```{r, include=FALSE, echo=FALSE}
+# This is the linear model of the model (M1):
+#attach(graissed)
+graissechange2
+res7 <- lm(graisse ~ age+ poids + taille + adipos + cou + buste + abdom+ hanche + cuisse + genou + cheville + biceps + avantb + poignet, data = graissechange2)
+```
+
+#### Résumé du modèle $\mathcal{M}_{2}$ 
+
+```{r, echo=FALSE}
+summary(res7)
+```
+
+
+Comment changent-elles les estimations des coefficients de régression? Et les valeurs ajustées?
+
+
+$$ 
+\hat{\beta}_{0_{\mathcal{M}_{2}}}= -49.74275 \\
+\hat{\beta}_{1_{\mathcal{M}_{2}}}=  0.05871 \\
+\hat{\beta}_{2_{\mathcal{M}_{2}}}= -0.38166   \\
+\hat{\beta}_{3_{\mathcal{M}_{2}}}=   0.18534     
+$$
+
+et les autres valeurs restent les mêmes. Noter que:
+
+$$
+\hat{\beta}_{2_{\mathcal{M}_{2}}}= -0.38166 = \frac{1}{0.454}  \hat{\beta}_{2_{\mathcal{M}_{1}}} 
+$$
+$$
+\hat{\beta}_{3_{\mathcal{M}_{2}}}=   0.18534 = \frac{1}{2.54}\hat{\beta}_{3_{\mathcal{M}_{1}}}
+$$
+
+L’échelle est la suivante:
+
+$$
+\tilde{X}=X \cdot \operatorname{diag}\left(c_1, c_2, \ldots, c_n\right)
+$$
+OU $c_i$ facteur d’échelle de chaque variable (colonne) et $\tilde{X}$ une version à l’échelle de $X$. Appelons la matrice d’échelle diagonale $C \equiv \operatorname{diag}\left(c_1, c_2, \ldots, c_n\right)$. L’estimateur est donné par :
+
+$$
+\hat{\beta}=\left(X^T X\right)^{-1} X^T Y
+$$
+
+Branchez la matrice mise à l’échelle $\tilde{X}$ au lieu de $X$ et utilisez une certaine algèbre de matrice:
+
+$$
+\begin{aligned}
+\hat{\beta}_{\tilde{X}}=& \left(\tilde{X}^T \tilde{X}\right)^{-1} \tilde{X}^T Y=\left(C^T X^T X C\right)^{-1} C^T X^T Y=C^{-1}\left(X^T X\right)^{-1} C^{-1} C X^T Y \\
+& =C^{-1}\left(X^T X\right)^{-1} X^T Y=C^{-1} \hat{\beta}_{X}
+\end{aligned}
+$$
+
+Ainsi, vous voyez comment le nouveau coefficient est simplement l’ancien coefficient réduit, comme prévu.
+
+
+
+### Importance of the R-squared term
+
+
+Soit le modele 
+
+$$
+graisse_{i} = \beta_{0} + \beta_{1} \,\, poids_{i} + \beta_{2} \,\, taille_{i}
+$$
+```{r,  echo=FALSE}
+# This is the linear model of the model (M1):
+#attach(graissed)
+res20 <- lm(graisse ~ poids + taille , data = graissed)
+summary(res20)
+#ggPredict(res6,se=TRUE,interactive=TRUE)
+```
+
+$\textbf{Interpretation:}$
+
+Ici, nous pouvons remarquer que la valeur $R^2$ augmente à mesure que d’autres prédicteurs sont ajoutés au modèle de régression multi-linéaire. Par exemple dans ce cas avec deux variables explicatives, nous avons $R^2=  0.5099$, tandis que dans le modèle avec les 13 variables explicatives nous avons $R^2=0.7475$. 
+
+
+
+
+
+
+
+
+
+
+
+## Le modèle avec constante $\mathcal{M}_{2}$ centre
+
+Réalisez aussi une régression sur les variables explicatives centrées. Pour centrer les variables explicatives,
+utilisez la fonction sweep décrite en fin de section. 
+
+
+```{r,include=FALSE, echo=FALSE}
+x1=mean(graissechange2$age)
+x1
+x2=mean(graissechange2$poids)
+x2
+x3=mean(graissechange2$taille)
+x3
+x4=mean(graissechange2$adipos)
+x4
+x5=mean(graissechange2$cou)
+x5
+x6=mean(graissechange2$buste)
+x6
+x7=mean(graissechange2$abdom)
+x7
+x8=mean(graissechange2$hanche)
+x8
+x9=mean(graissechange2$cuisse)
+x9
+x10=mean(graissechange2$genou)
+x10
+x11=mean(graissechange2$cheville)
+x1
+x12=mean(graissechange2$biceps)
+x12
+x13=mean(graissechange2$avantb)
+x13
+
+x14=mean(graissechange2$poignet)
+x14
+```
+
+
+
+#### Data initial avec la variable poids et taille centre:
+
+```{r, include=FALSE,echo=FALSE}
+graissechange2
+graissecentre <- sweep(graissechange2, 2, c(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14))
+graissecentre
+res9 <- lm(graisse ~ age+ poids + taille + adipos + cou + buste + abdom+ hanche + cuisse + genou + cheville + biceps + avantb + poignet, data = graissecentre)
+```
+
+
+
+```{r,echo=FALSE}
+summary(res9)
+```
+
+$$ 
+\hat{\beta}_{0}= - 3.34563  \\
+\hat{\beta}_{1}=   0.08825 \\
+\hat{\beta}_{2}= 0.07190   \\
+\hat{\beta}_{3}=   0.06886     
+$$
+
+#### La moyenne de fitted values
+
+```{r, echo=FALSE}
+mean(res9$fitted)
+```
+$$
+\overline{\hat{y}}= -42.81597
+$$
+
+#### La moyenne de residues
+
+```{r,echo=FALSE}
+mean(res9$residuals)
+```
+
+$$
+\overline{\hat{\epsilon}}= -3.220124e-17 \approx 0
+$$
+ 
+## Le modèle avec constante $\mathcal{M}_{2}$ centre et reduite
+
+ * Enfin, réalisez une régression sur les variables explicatives centrées et réduite (pour la réduction, utilisez aussi sweep).
+
+```{r,include=FALSE, echo=FALSE}
+x1=mean(graissechange2$age)
+x1
+x2=mean(graissechange2$poids)
+x2
+x3=mean(graissechange2$taille)
+x3
+x4=mean(graissechange2$adipos)
+x4
+x5=mean(graissechange2$cou)
+x5
+x6=mean(graissechange2$buste)
+x6
+x7=mean(graissechange2$abdom)
+x7
+x8=mean(graissechange2$hanche)
+x8
+x9=mean(graissechange2$cuisse)
+x9
+x10=mean(graissechange2$genou)
+x10
+x11=mean(graissechange2$cheville)
+x1
+x12=mean(graissechange2$biceps)
+x12
+x13=mean(graissechange2$avantb)
+x13
+
+x14=mean(graissechange2$poignet)
+x14
+```
+
+```{r,include=FALSE, echo=FALSE}
+graissechange2
+graissecentre <- sweep(graissechange2, 2, c(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14))
+graissecentre
+graissecentre <- sweep(graissechange2, 2, c(sd(graissechange2$age), sd(graissechange2$poids), sd(graissechange2$taille),sd(graissechange2$adipos), sd(graissechange2$cou), sd(graissechange2$buste),sd(graissechange2$abdom), sd(graissechange2$hanche),sd(graissechange2$cuisse), sd(graissechange2$genou), sd(graissechange2$cheville), sd(graissechange2$biceps), sd(graissechange2$avantb), sd(graissechange2$poignet)),"/" )
+res30 <- lm(graisse ~ age+ poids + taille + adipos + cou + buste + abdom+ hanche + cuisse + genou + cheville + biceps + avantb + poignet, data = graissecentre)
+
+```
+
+```{r, echo=FALSE}
+summary(res30)
+```
+
+
+$$ 
+\hat{\beta}_{0}= -18.638256   \\
+\hat{\beta}_{1}=   0.070019 \\
+\hat{\beta}_{2}= 0.045915  \\
+\hat{\beta}_{3}=   0.021294   
+$$
+
+#### La moyenne de fitted values
+
+```{r, echo=FALSE}
+mean(res9$fitted)
+```
+$$
+\overline{\hat{y}}= -42.81597
+$$
+
+#### La moyenne de residues
+
+```{r,echo=FALSE}
+mean(res9$residuals)
+```
+
+$$
+\overline{\hat{\epsilon}}=  -3.220124e-17 \approx 0 . 
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Part III. Programmes faits à la main
+
+Créer une fonction qui a comme paramètres d'entrée la variable à prédire y et la matrice des variables explicatives $\mathrm{X}$ et en sorties, le vecteur $\hat{\boldsymbol{\beta}}$ des estimateurs de coefficients de régression $\beta$, le vecteur des valeurs ajustées $\hat{\mathbf{y}}$, le vecteur des résidus $\hat{\varepsilon}$ et le $R^2$. Attention, les opérations avec des matrices peuvent prendre rapidement beaucoup de temps, essayez de créer une fonction rapide; vous pouvez utiliser la fonction crossprod pour calculer des produits de matrices avec des transposées et solve(A,b) pour calculer $A^{-1} b$. Comparez vos résultats avec ceux obtenus avec la fonction Im sur les deux jeux de données.
+
+
+```{r, include=FALSE, echo=FALSE}
+##This is the merge program data:
+
+##Data for epsilonhat:
+
+y <- prixsurface$prix
+y
+
+y <-matrix(y,byrow = FALSE)
+
+y
+
+# Matrix of feature variables from Boston
+X <- as.matrix(prixsurface[-ncol(prixsurface)])
+X
+
+# vector of ones with same length as rows in Boston
+int <- rep(1, length(y))
+int
+
+# Add intercept column to X
+X <- cbind(int, X)
+X
+
+# Implement closed-form solution
+betas <- solve(t(X) %*% X) %*% t(X) %*% y
+betas
+
+# Round for easier viewing
+betas <- round(betas, 2)
+betas
+
+##Data for R2:
+totalvariance <- y- mean(y)
+totalvariance
+
+
+# The functions:
+
+## This fucntion computes the norm of a vector:
+norm_Of_vector <- function(x){sum(x^2)}
+norm_Of_vector(y)
+
+
+
+### Liner Regression we obtain the betas:
+
+mylinearregression <- function(y) {
+  betas <- solve(t(X) %*% X) %*% t(X) %*% y
+  betas
+  betas <- round(betas, 2)
+  betas <- matrix(betas,byrow = FALSE)
+  betas
+  return(betas)
+}
+
+betas <- mylinearregression(y)
+betas
+
+
+
+
+# The function that find the fitted values. 
+
+fitted_Values <- function(X, betasestimator){
+  
+  fitted_Values <-  X %*% betasestimator
+  
+  fitted_Values
+}
+Yhat <- fitted_Values(X,betas)
+Yhat
+
+### The mean for the fitted:
+mean(Yhat)
+
+
+
+
+
+## The function that computes the epsilon hat
+epsilon_Estimator <- function(fittedvalues, y){
+  
+  epsilon_hat <- y - fittedvalues
+}
+
+epsilonhat <-epsilon_Estimator(Yhat,y)
+epsilonhat
+mean(epsilonhat)
+
+
+
+
+## This computes the $R^2$
+Rsecond <- function(epsilorestiated, totalvariance){
+  valueofR <- 1- norm_Of_vector(epsilorestiated)/norm_Of_vector(totalvariance) 
+  
+  valueofR
+}
+
+R2 <- Rsecond(epsilonhat,totalvariance)
+R2
+```
+
+
+
+```{r, echo=FALSE}
+### Linear Regression program with constant:
+
+myliregresAndrea <- function(y,X, betas,Yhat, epsilonhat, totalvariance){
+  ###3
+  betas <- mylinearregression(y)
+  row.names(betas) <- c("Intercept","Slope")
+  #betas
+  print("The intersection value and the slope values are: ")
+  print(betas)
+  ####
+  Yhat <- fitted_Values(X,betas)
+  #print(Yhat)
+  print("The mean of the fitted values is:" )
+ # names(Yhat) <- c("Y")
+ # Yhat
+  print(mean(Yhat))
+  ####
+  epsilonhat <-epsilon_Estimator(Yhat,y)
+  #print(epsilonhat)
+  print("The mean of the residuals values is:" )
+  print(mean(epsilonhat))
+ 
+  R2 <- Rsecond(epsilonhat, totalvariance)
+  print("The value of R^2 is :")
+  R2
+}
+
+myliregresAndrea(y,X, betas,Yhat, epsilonhat, totalvariance)
+
+```
+
+
+### Comparaison entre mon programme et lm:
+
+```{r, echo=FALSE}
+# Linear regression model
+lm.mod <- lm(prix~ ., data=prixsurface)
+
+lm.mod
+
+# Round for easier viewing
+lm.betas <- round(lm.mod$coefficients, 2)
+
+
+# La mayonne the fitted values. 
+
+# La moyenne de residuals
+
+# Create data.frame of results
+results <- data.frame(our.results=betas, lm.results=lm.betas)
+
+print(results)
+```
+
+
+
