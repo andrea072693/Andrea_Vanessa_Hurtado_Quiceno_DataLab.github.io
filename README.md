@@ -211,9 +211,9 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 - **R packages for mapping and visualization**:
   - `sf`, `tmap`, `leaflet`, `gridExtra`, `ggrepel`
 
-[View HTML Data Analisis project](project/Projet_Ritish_Andrea.html)
+[View HTML Data Analisis project](https://andrea072693.github.io/Data_Science_project_Socioeconomic_Differences/)
 
-[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/project/Projet_Ritish_Andrea.rmd)
+[View R Document](https://github.com/andrea072693/Data_Science_project_Socioeconomic_Differences/blob/67bce8f5e46bc19963b8676a77fde0ac68ee2b12/Projet_Ritish_Andrea.rmd)
 
 
 ##### **Recommendations for Further Study**:
