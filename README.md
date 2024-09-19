@@ -96,7 +96,7 @@ This project involved creating a console-based version of the popular Monopoly b
 
 
 ## Linear Models
-*Master 1 in Modelisation Statistique master's project*  
+*Master 1 in Modelisation Statistique projects*  
 Université Franche-Comté, Besançon (2022 – 2023)
 
 
@@ -118,9 +118,9 @@ This project tackled **simple and multiple linear regression models** to predict
 - Custom Regression Functions
 - R Programming (Functions: `lm()`, `sweep()`, matrix operations)
 
-[View HTML TP1 report](doc/TP1NEWToSubmit.html)
+[View HTML TP1 report](https://github.com/andrea072693/tp1_Linear_Models/blob/ff81c268d41b5a2846d4105ca65edb031d420040/TP1NEWToSubmit.html)
 
-[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/doc/TP1NEWToSubmit.Rmd)
+[View R Document](https://github.com/andrea072693/tp1_Linear_Models/blob/ff81c268d41b5a2846d4105ca65edb031d420040/TP1NEWToSubmit.Rmd)
 
 ### **Linear Models Project (TP2)**  
 
@@ -159,7 +159,7 @@ This project focused on building and validating multiple **linear regression mod
 [View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
 
 ## Data Analysis Lecture
-*Master 1 in Modelisation Statistique master's project*  
+*Master 1 in Modelisation Statistique projects*  
 Université Franche-Comté, Besançon (2022 – 2023)
 
 ### Socioeconomic Differences Between Bourgogne and Franche-Comté Regions in 2012: A PCA Analysis
