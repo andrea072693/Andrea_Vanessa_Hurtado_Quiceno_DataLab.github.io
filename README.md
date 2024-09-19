@@ -304,9 +304,9 @@ This project analyzes simulated data using statistical methods. The goal is to e
 - `car`: For regression diagnostics and hypothesis testing.
 - `tidyr`: For reshaping and organizing data.
   
-[View HTML Statistics](statistics/project_statististics.html)
+[View HTML Statistics](https://andrea072693.github.io/Statistics_project/)
 
-[View R code](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/5195913c2c25880daf861448d59a8d2539baf68c/statistics/project_statististics.Rmd)
+[View R code](https://github.com/andrea072693/Statistics_project/blob/120e54a663c9070c2708caef5d4f90938143c8bc/project_statististics.Rmd)
 
 
 ## New projects, coming soon!!!
