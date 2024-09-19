@@ -156,7 +156,7 @@ This project focused on building and validating multiple **linear regression mod
 - Cross-Validation Techniques
 - R Programming (Libraries: `lm()`, `corrplot`, `leaps`)
 
-[View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
+[View HTML TP3 report](https://andrea072693.github.io/tp3_Linear_Models/)
 
 [View R Document](https://github.com/andrea072693/tp3_Linear_Models/blob/b6cec4770555d115688638c42fbe18a67f7729fe/TP3HURTADOAndrea.Rmd)
 
