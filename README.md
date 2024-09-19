@@ -118,7 +118,7 @@ This project tackled **simple and multiple linear regression models** to predict
 - Custom Regression Functions
 - R Programming (Functions: `lm()`, `sweep()`, matrix operations)
 
-[View the Full Report](https://github.com/andrea072693/tp1_Linear_Models/blob/ff81c268d41b5a2846d4105ca65edb031d420040/TP1NEWToSubmit.html)
+[View the Full Report](https://github.com/andrea072693/tp1_Linear_Models/blob/516ed7adbc4898e00a83c48dd334979eba9b89d9/index.html)
 
 [View R Document](https://github.com/andrea072693/tp1_Linear_Models/blob/ff81c268d41b5a2846d4105ca65edb031d420040/TP1NEWToSubmit.Rmd)
 
