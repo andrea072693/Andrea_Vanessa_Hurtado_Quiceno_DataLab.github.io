@@ -158,6 +158,9 @@ This project focused on building and validating multiple **linear regression mod
 
 [View HTML TP3 report](TP3/TP3HURTADOAndrea.html)
 
+[View R Document](https://github.com/andrea072693/tp3_Linear_Models/blob/b6cec4770555d115688638c42fbe18a67f7729fe/TP3HURTADOAndrea.Rmd)
+
+
 ## Data Analysis Lecture
 *Master 1 in Modelisation Statistique projects*  
 Université Franche-Comté, Besançon (2022 – 2023)
