@@ -278,9 +278,9 @@ For each value of \(n\), we calculate \(N_n\), the number of revisits, and use M
 - `tibble`: For creating and managing tidy data frames.
 - `gridExtra`: For arranging multiple plots in a grid format for easier comparison.
 
-[View HTML Simulations](simulations/SimulationProject_Ritish_Andrea.html)
+[View HTML Simulations](https://andrea072693.github.io/simulations_in_R_Andrea_Hurtado/)
 
-[View R code](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/cdc421bf68f624c751fd21253e8f22164da6d0ca/simulations/SimulationProject_Ritish_Andrea.Rmd)
+[View R code](https://github.com/andrea072693/simulations_in_R_Andrea_Hurtado/blob/85ae59ad405991ccdcd6b9a055ab4d4f1ef40a8c/SimulationProject_Ritish_Andrea.Rmd)
 
 
 ## Statistics Lecture
