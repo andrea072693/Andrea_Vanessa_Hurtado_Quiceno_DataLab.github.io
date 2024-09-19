@@ -140,9 +140,9 @@ This project involved using multiple **linear regression models** to predict ozo
 - Bootstrap Methods for Confidence Intervals
 - R Programming (Libraries: `lm()`, `ellipse`, `bootstrap`)
 
-[View HTML TP2 report](TP2/TP2NEW2.html)
+[View HTML TP2 report](https://andrea072693.github.io/tp2_Linear_Models/)
 
-[View R Document](https://github.com/andrea072693/Andrea_Vanessa_Hurtado_Quiceno_DataLab.github.io/blob/04fb0a05ed8fa8fbcd9016e949ab3820056e0c81/TP2/TP2NEW2.Rmd)
+[View R Document](https://github.com/andrea072693/tp2_Linear_Models/blob/650174e7d828dcf3abc38e21f003fcc382525c43/TP2NEW2.Rmd)
 
 
 ### **Linear Models Project (TP3)**  
