@@ -156,7 +156,6 @@ This project focused on building and validating multiple **linear regression mod
 - Cross-Validation Techniques
 - R Programming (Libraries: `lm()`, `corrplot`, `leaps`)
 
-[View HTML TP3 report](https://andrea072693.github.io/tp3_Linear_Models/)
 
 [View R Document](https://github.com/andrea072693/tp3_Linear_Models/blob/b6cec4770555d115688638c42fbe18a67f7729fe/TP3HURTADOAndrea.Rmd)
 
@@ -211,7 +210,7 @@ This project focused on analyzing **socioeconomic disparities** between Bourgogn
 - **R packages for mapping and visualization**:
   - `sf`, `tmap`, `leaflet`, `gridExtra`, `ggrepel`
 
-[View HTML Data Analisis project](https://andrea072693.github.io/Data_Science_project_Socioeconomic_Differences/)
+
 
 [View R Document](https://github.com/andrea072693/Data_Science_project_Socioeconomic_Differences/blob/67bce8f5e46bc19963b8676a77fde0ac68ee2b12/Projet_Ritish_Andrea.rmd)
 
