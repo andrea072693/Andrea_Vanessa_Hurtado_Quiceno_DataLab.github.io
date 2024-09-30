@@ -10,11 +10,11 @@ Welcome to my GitHub portfolio! I am Andrea Vanessa Hurtado Quiceno, a PhD candi
 - **LinkedIn:** [Andrea V. Hurtado Quiceno](https://www.linkedin.com/in/andrea-v-hurtado-quiceno-92a834187/)
 - **EWM Profile:** [European Women in Mathematics](https://www.europeanwomeninmaths.org/profile/andrea-vanessa-hurtado-quiceno/)
 - **Current Affiliation:** PhD Candidate at RPTU Kaiserslautern
-  - **Field of Study:** Functional Analysis and Stochastic Analysis
+  - **Field of Study:** Stochastic Analysis und Differentialgeometrie. 
   - **Advisor:** Martin Grothaus
 
 ##  Education
-- **PhD in Functional Analysis and Stochastic Analysis**  
+- **PhD in Stochastic Analysis und Differentialgeometrie.**  
   RPTU Kaiserslautern (2023 – Present)  
 
 - **Master 1 in Modelisation Statistique**  
@@ -23,11 +23,8 @@ Welcome to my GitHub portfolio! I am Andrea Vanessa Hurtado Quiceno, a PhD candi
 - **Master 2 in Mathematiques Fondamentales**  
   Université Sorbonne (Institut Pierre et Marie Curie), Paris (2020 – 2021)  
 
-- **Master 2 in Mathematical Physics**  
-  Université de Bourgogne, Dijon (2019 – 2020)  
-
-- **Master 1 in Mathematical Physics**  
-  Université de Bourgogne, Dijon (2018 – 2019)  
+- **Master in Mathematical Physics**  
+  Université de Bourgogne, Dijon (2018 – 2020)  
 
 - **BSc in Mathematics**  
   Universidad del Valle, Cali, Colombia (2009 – 2016)  
